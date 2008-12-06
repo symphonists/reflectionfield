@@ -31,7 +31,7 @@
 					`id` int(11) unsigned NOT NULL auto_increment,
 					`entry_id` int(11) unsigned NOT NULL,
 					`handle` varchar(255) default NULL,
-					`value_normal` text default NULL,
+					`value` text default NULL,
 					`value_formatted` text default NULL,
 					PRIMARY KEY (`id`),
 					KEY `entry_id` (`entry_id`),
