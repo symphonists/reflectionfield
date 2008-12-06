@@ -20,6 +20,7 @@
 			// Set defaults:
 			$this->set('show_column', 'yes');
 			$this->set('allow_override', 'no');
+      $this->set('hide', 'no');
 		}
 		
 		public function createTable() {
@@ -121,6 +122,22 @@
 			$label->setValue($input->generate() . ' Allow value to be manually overridden');
 			$wrapper->appendChild($label);
 			*/
+
+      /*---------------------------------------------------------------------
+      Hide input during entry creation
+    ---------------------------------------------------------------------*/
+      
+      
+      $label = Widget::Label();
+      $input = Widget::Input("fields[{$order}][hide]", 'yes', 'checkbox');
+      
+      if ($this->get('hide') == 'yes') {
+        $input->setAttribute('checked', 'checked');
+      }
+      
+      $label->setValue($input->generate() . ' Hide this field during entry creatoin');
+      $wrapper->appendChild($label);
+      
 			
 			$this->appendShowColumnCheckbox($wrapper);
 		}
@@ -137,7 +154,8 @@
 				'field_id'			=> $id,
 				'expression'		=> $this->get('expression'),
 				'formatter'			=> $this->get('formatter'),
-				'override'			=> $this->get('override')
+				'override'			=> $this->get('override'),
+        'hide'          => $this->get('hide')
 			);
 			
 			$this->Database->query("
@@ -159,22 +177,32 @@
 			$sortorder = $this->get('sortorder');
 			$element_name = $this->get('element_name');
 			$allow_override = null;
-			
-			if ($this->get('override') != 'yes') {
-				$allow_override = array(
-					'disabled'	=> 'disabled'
-				);
-			}
-			
-			$label = Widget::Label($this->get('label'));
-			$label->appendChild(
-				Widget::Input(
-					"fields{$prefix}[$element_name]{$postfix}",
-					@$data['value_normal'], 'text', $allow_override
-				)
-			);
-			$wrapper->appendChild($label);
-		}
+      
+      if ($this->get('override') != 'yes') {
+        $allow_override = array(
+          'disabled'  => 'disabled'
+        );
+      }
+      if ($this->get('hide') != 'yes') {
+        $label = Widget::Label($this->get('label'));
+        $label->appendChild(
+          Widget::Input(
+            "fields{$prefix}[$element_name]{$postfix}",
+            @$data['value_normal'], 'text', $allow_override
+          )
+        );
+      $wrapper->appendChild($label);
+      }
+      else {
+        $span = new XMLElement('span');
+        $span->appendChild(
+          Widget::Input(
+            "fields{$prefix}[$element_name]{$postfix}",
+            @$data['value_normal'], 'hidden', $allow_override
+          )
+        );
+      }
+    }
 		
 	/*-------------------------------------------------------------------------
 		Input:

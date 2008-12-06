@@ -35,6 +35,7 @@
 					`expression` varchar(255) default NULL,
 					`formatter` varchar(255) default NULL,
 					`override` enum('yes', 'no') default 'no',
+          `hide` enum('yes', 'no') default 'no',
 					PRIMARY KEY (`id`),
 					KEY `field_id` (`field_id`)
 				)
