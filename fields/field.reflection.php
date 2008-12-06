@@ -80,6 +80,13 @@
 			
 			$wrapper->appendChild($label);
 			
+			$help = new XMLElement('p');
+			$help->setAttribute('class', 'help');
+			
+			$help->setValue('To access the other fields, use XPath: <code>{entry/field-one} static text {entry/field-two}</code>.');
+			
+			$wrapper->appendChild($help);
+			
 		/*---------------------------------------------------------------------
 			Allow Override
 		---------------------------------------------------------------------*/
