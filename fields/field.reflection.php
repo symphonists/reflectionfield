@@ -135,7 +135,7 @@
         $input->setAttribute('checked', 'checked');
       }
       
-      $label->setValue($input->generate() . ' Hide this field during entry creatoin');
+      $label->setValue($input->generate() . ' Hide this field during entry creation');
       $wrapper->appendChild($label);
       
 			
