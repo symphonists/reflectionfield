@@ -35,7 +35,7 @@
 					`value_formatted` text default NULL,
 					PRIMARY KEY (`id`),
 					KEY `entry_id` (`entry_id`),
-					FULLTEXT KEY `value_normal` (`value_normal`),
+					FULLTEXT KEY `value` (`value`),
 					FULLTEXT KEY `value_formatted` (`value_formatted`)
 				) TYPE=MyISAM;
 			");
@@ -188,7 +188,7 @@
         $label->appendChild(
           Widget::Input(
             "fields{$prefix}[$element_name]{$postfix}",
-            @$data['value_normal'], 'text', $allow_override
+            @$data['value'], 'text', $allow_override
           )
         );
       $wrapper->appendChild($label);
@@ -198,7 +198,7 @@
         $span->appendChild(
           Widget::Input(
             "fields{$prefix}[$element_name]{$postfix}",
-            @$data['value_normal'], 'hidden', $allow_override
+            @$data['value'], 'hidden', $allow_override
           )
         );
       }
@@ -219,7 +219,7 @@
 			
 			return array(
 				'handle'			=> null,
-				'value_normal'		=> null,
+				'value'		=> null,
 				'value_formatted'	=> null
 			);
 		}
@@ -238,7 +238,7 @@
 				$element->setValue($data['value_formatted']);
 				
 			} else {
-				$element->setValue($data['value_normal']);
+				$element->setValue($data['value']);
 			}
 			
 			$wrapper->appendChild($element);
@@ -257,7 +257,7 @@
 			} else {
 				return parent::prepareTableValue(
 					array(
-					'value'		=> $data['value_normal']
+					'value'		=> $data['value']
 					), $link
 				);
 			}
@@ -312,21 +312,21 @@
 			}
 			
 			// Apply replacements:
-			$value_normal = str_replace(
+			$value = str_replace(
 				array_keys($replacements),
 				array_values($replacements),
 				$expression
 			);
 			
 			// Apply formatting:
-			if (!$value_formatted = $this->applyFormatting($value_normal)) {
-				$value_formatted = General::sanitize($value_normal);
+			if (!$value_formatted = $this->applyFormatting($value)) {
+				$value_formatted = General::sanitize($value);
 			}
 			
 			// Save:
 			$result = $this->Database->update(array(
-				'handle'			=> Lang::createHandle($value_normal),
-				'value_normal'		=> $value_normal,
+				'handle'			=> Lang::createHandle($value),
+				'value'		=> $value,
 				'value_formatted'	=> $value_formatted
 			), "tbl_entries_data_{$field_id}", "
 				`entry_id` = '{$entry_id}'
@@ -351,7 +351,7 @@
 				$where .= "
 					AND (
 						t{$field_id}_{$this->_key}.handle REGEXP '{$pattern}'
-						OR t{$field_id}_{$this->_key}.value_normal REGEXP '{$pattern}'
+						OR t{$field_id}_{$this->_key}.value REGEXP '{$pattern}'
 					)
 				";
 				
@@ -367,7 +367,7 @@
 					$where .= "
 						AND (
 							t{$field_id}_{$this->_key}.handle = '{$value}'
-							OR t{$field_id}_{$this->_key}.value_normal = '{$value}'
+							OR t{$field_id}_{$this->_key}.value = '{$value}'
 						)
 					";
 				}
@@ -389,7 +389,7 @@
 				$where .= "
 					AND (
 						t{$field_id}_{$this->_key}.handle IN ('{$data}')
-						OR t{$field_id}_{$this->_key}.value_normal IN ('{$data}')
+						OR t{$field_id}_{$this->_key}.value IN ('{$data}')
 					)
 				";
 			}
@@ -405,7 +405,7 @@
 			$field_id = $this->get('id');
 			
 			$joins .= "INNER JOIN `tbl_entries_data_{$field_id}` AS ed ON (e.id = ed.entry_id) ";
-			$sort = 'ORDER BY ' . (strtolower($order) == 'random' ? 'RAND()' : "ed.value_normal {$order}");
+			$sort = 'ORDER BY ' . (strtolower($order) == 'random' ? 'RAND()' : "ed.value {$order}");
 		}
 		
 	/*-------------------------------------------------------------------------
