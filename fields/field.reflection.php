@@ -30,11 +30,12 @@
 					`id` int(11) unsigned NOT NULL auto_increment,
 					`entry_id` int(11) unsigned NOT NULL,
 					`handle` varchar(255) default NULL,
-					`value` varchar(255) default NULL,
-					`overridden` enum('yes', 'no') default 'no' NOT NULL,
-					PRIMARY KEY  (`id`),
+					`value_normal` text default NULL,
+					`value_formatted` text default NULL,
+					PRIMARY KEY (`id`),
 					KEY `entry_id` (`entry_id`),
-					KEY `value` (`value`)
+					FULLTEXT KEY `value_normal` (`value_normal`),
+					FULLTEXT KEY `value_formatted` (`value_formatted`)
 				) TYPE=MyISAM;
 			");
 		}
@@ -72,20 +73,38 @@
 			Expression
 		---------------------------------------------------------------------*/
 			
+			$group = new XMLElement('div');
+			$group->setAttribute('class', 'group');
+			
+			$div = new XMLElement('div');
 			$label = Widget::Label('Expression');
 			$label->appendChild(Widget::Input(
 				"fields[{$order}][expression]",
 				$this->get('expression')
 			));
 			
-			$wrapper->appendChild($label);
-			
 			$help = new XMLElement('p');
 			$help->setAttribute('class', 'help');
 			
-			$help->setValue('To access the other fields, use XPath: <code>{entry/field-one} static text {entry/field-two}</code>.');
+			$help->setValue('
+				To access the other fields, use XPath: <code>{entry/field-one}
+				static text {entry/field-two}</code>.
+			');
 			
-			$wrapper->appendChild($help);
+			$div->appendChild($label);
+			$div->appendChild($help);
+			$group->appendChild($div);
+			
+		/*---------------------------------------------------------------------
+			Text Formatter
+		---------------------------------------------------------------------*/
+			
+			$group->appendChild($this->buildFormatterSelect(
+				$this->get('formatter'),
+				"fields[{$order}][formatter]",
+				'Text Formatter'
+			));
+			$wrapper->appendChild($group);
 			
 		/*---------------------------------------------------------------------
 			Allow Override
@@ -117,7 +136,8 @@
 			$fields = array(
 				'field_id'			=> $id,
 				'expression'		=> $this->get('expression'),
-				'allow_override'	=> $this->get('allow_override')
+				'formatter'			=> $this->get('formatter'),
+				'override'			=> $this->get('override')
 			);
 			
 			$this->Database->query("
@@ -140,7 +160,7 @@
 			$element_name = $this->get('element_name');
 			$allow_override = null;
 			
-			if ($this->get('allow_override') == 'no') {
+			if ($this->get('override') != 'yes') {
 				$allow_override = array(
 					'disabled'	=> 'disabled'
 				);
@@ -150,7 +170,7 @@
 			$label->appendChild(
 				Widget::Input(
 					"fields{$prefix}[$element_name]{$postfix}",
-					@$data['value'], 'text', $allow_override
+					@$data['value_normal'], 'text', $allow_override
 				)
 			);
 			$wrapper->appendChild($label);
@@ -170,8 +190,9 @@
 			$status = self::__OK__;
 			
 			return array(
-				'handle'	=> Lang::createHandle($data),
-				'value'		=> $data
+				'handle'			=> null,
+				'value_normal'		=> null,
+				'value_formatted'	=> null
 			);
 		}
 		
@@ -184,7 +205,13 @@
 			
 			$element = new XMLElement($this->get('element_name'));
 			$element->setAttribute('handle', $data['handle']);
-			$element->setValue($data['value']);
+			
+			if ($this->get('formatter') != 'none') {
+				$element->setValue($data['value_formatted']);
+				
+			} else {
+				$element->setValue($data['value_normal']);
+			}
 			
 			$wrapper->appendChild($element);
 		}
@@ -192,12 +219,43 @@
 		public function prepareTableValue($data, XMLElement $link = null) {
 			if (empty($data)) return;
 			
-			return parent::prepareTableValue($data, $link);
+			if ($this->get('formatter') != 'none') {
+				return parent::prepareTableValue(
+					array(
+					'value'		=> $data['value_formatted']
+					), $link
+				);
+				
+			} else {
+				return parent::prepareTableValue(
+					array(
+					'value'		=> $data['value_normal']
+					), $link
+				);
+			}
 		}
 		
 	/*-------------------------------------------------------------------------
 		Compile:
 	-------------------------------------------------------------------------*/
+		
+		public function applyFormatting($data) {
+			if ($this->get('formatter') != 'none') {
+				if (isset($this->_ParentCatalogue['entrymanager'])) {
+					$tfm = $this->_ParentCatalogue['entrymanager']->formatterManager;
+					
+				} else {
+					$tfm = new TextformatterManager($this->_engine);
+				}
+				
+				$formatter = $tfm->create($this->get('formatter'));
+				$formatted = $formatter->run($data);
+				
+			 	return preg_replace('/&(?![a-z]{0,4}\w{2,3};|#[x0-9a-f]{2,6};)/i', '&amp;', $formatted);
+			}	
+			
+			return null;		
+		}
 		
 		public function compile($entry) {
 			self::$ready = false;
@@ -226,19 +284,89 @@
 			}
 			
 			// Apply replacements:
-			$expression = str_replace(
+			$value_normal = str_replace(
 				array_keys($replacements),
 				array_values($replacements),
 				$expression
 			);
 			
+			// Apply formatting:
+			if (!$value_formatted = $this->applyFormatting($value_normal)) {
+				$value_formatted = General::sanitize($value_normal);
+			}
+			
 			// Save:
 			$result = $this->Database->update(array(
-				'handle'	=> Lang::createHandle($expression),
-				'value'		=> $expression
+				'handle'			=> Lang::createHandle($value_normal),
+				'value_normal'		=> $value_normal,
+				'value_formatted'	=> $value_formatted
 			), "tbl_entries_data_{$field_id}", "
 				`entry_id` = '{$entry_id}'
 			");
+		}
+		
+	/*-------------------------------------------------------------------------
+		Filtering:
+	-------------------------------------------------------------------------*/
+		
+		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
+			$field_id = $this->get('id');
+			
+			if (self::isFilterRegex($data[0])) {
+				$this->_key++;
+				$pattern = str_replace('regexp:', '', $this->cleanValue($data[0]));
+				$joins .= "
+					LEFT JOIN
+						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
+						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+				";
+				$where .= "
+					AND (
+						t{$field_id}_{$this->_key}.handle REGEXP '{$pattern}'
+						OR t{$field_id}_{$this->_key}.value_normal REGEXP '{$pattern}'
+					)
+				";
+				
+			} elseif ($andOperation) {
+				foreach ($data as $value) {
+					$this->_key++;
+					$value = $this->cleanValue($value);
+					$joins .= "
+						LEFT JOIN
+							`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
+							ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+					";
+					$where .= "
+						AND (
+							t{$field_id}_{$this->_key}.handle = '{$value}'
+							OR t{$field_id}_{$this->_key}.value_normal = '{$value}'
+						)
+					";
+				}
+				
+			} else {
+				if (!is_array($data)) $data = array($data);
+				
+				foreach ($data as &$value) {
+					$value = $this->cleanValue($value);
+				}
+				
+				$this->_key++;
+				$data = implode("', '", $data);
+				$joins .= "
+					LEFT JOIN
+						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
+						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+				";
+				$where .= "
+					AND (
+						t{$field_id}_{$this->_key}.handle IN ('{$data}')
+						OR t{$field_id}_{$this->_key}.value_normal IN ('{$data}')
+					)
+				";
+			}
+			
+			return true;
 		}
 		
 	/*-------------------------------------------------------------------------
@@ -249,7 +377,7 @@
 			$field_id = $this->get('id');
 			
 			$joins .= "INNER JOIN `tbl_entries_data_{$field_id}` AS ed ON (e.id = ed.entry_id) ";
-			$sort = 'ORDER BY ' . (strtolower($order) == 'random' ? 'RAND()' : "ed.value {$order}");
+			$sort = 'ORDER BY ' . (strtolower($order) == 'random' ? 'RAND()' : "ed.value_normal {$order}");
 		}
 		
 	/*-------------------------------------------------------------------------

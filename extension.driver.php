@@ -10,8 +10,8 @@
 		public function about() {
 			return array(
 				'name'			=> 'Field: Reflection',
-				'version'		=> '1.001',
-				'release-date'	=> '2008-12-05',
+				'version'		=> '1.002',
+				'release-date'	=> '2008-12-06',
 				'author'		=> array(
 					'name'			=> 'Rowan Lewis',
 					'website'		=> 'http://pixelcarnage.com/',
@@ -33,7 +33,8 @@
 					`id` int(11) unsigned NOT NULL auto_increment,
 					`field_id` int(11) unsigned NOT NULL,
 					`expression` varchar(255) default NULL,
-					`allow_override` enum('yes', 'no') default 'no' NOT NULL,
+					`formatter` varchar(255) default NULL,
+					`override` enum('yes', 'no') default 'no',
 					PRIMARY KEY (`id`),
 					KEY `field_id` (`field_id`)
 				)
