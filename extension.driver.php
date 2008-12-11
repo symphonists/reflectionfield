@@ -39,6 +39,8 @@
 					KEY `field_id` (`field_id`)
 				)
 			");
+			
+			return true;
 		}
 		
 		public function getSubscribedDelegates() {
