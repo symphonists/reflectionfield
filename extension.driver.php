@@ -10,8 +10,8 @@
 		public function about() {
 			return array(
 				'name'			=> 'Field: Reflection',
-				'version'		=> '1.002',
-				'release-date'	=> '2008-12-06',
+				'version'		=> '1.004',
+				'release-date'	=> '2009-02-02',
 				'author'		=> array(
 					'name'			=> 'Rowan Lewis',
 					'website'		=> 'http://pixelcarnage.com/',
@@ -95,6 +95,8 @@
 			
 			// Add fields:
 			foreach ($data as $field_id => $values) {
+				if (empty($field_id)) continue;
+				
 				$field =& $entry->_Parent->fieldManager->fetch($field_id);
 				$field->appendFormattedElement($entry_xml, $values, false);
 			}

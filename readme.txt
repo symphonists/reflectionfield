@@ -1,9 +1,9 @@
 Field: Reflection
 -------------------------------------------------------------------------------
 
-Version: 1.002
+Version: 1.004
 Author: Rowan Lewis <rowan@pixelcarnage.com>
-Build Date: 06 December 2008
+Build Date: 02 February 2009
 Requirements: Latest source from git
 
 
