@@ -40,7 +40,7 @@
 				) TYPE=MyISAM;
 			");
 		}
-
+		
 		public function allowDatasourceOutputGrouping() {
 			return true;
 		}
