@@ -4,7 +4,6 @@
 	
 	class FieldReflection extends Field {
 		protected $_driver = null;
-		
 		protected static $ready = true;
 		
 	/*-------------------------------------------------------------------------
@@ -28,16 +27,16 @@
 			
 			return $this->_engine->Database->query("
 				CREATE TABLE IF NOT EXISTS `tbl_entries_data_{$field_id}` (
-					`id` int(11) unsigned NOT NULL auto_increment,
-					`entry_id` int(11) unsigned NOT NULL,
-					`handle` varchar(255) default NULL,
-					`value` text default NULL,
-					`value_formatted` text default NULL,
+					`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+					`entry_id` INT(11) UNSIGNED NOT NULL,
+					`handle` VARCHAR(255) DEFAULT NULL,
+					`value` TEXT DEFAULT NULL,
+					`value_formatted` TEXT DEFAULT NULL,
 					PRIMARY KEY (`id`),
 					KEY `entry_id` (`entry_id`),
 					FULLTEXT KEY `value` (`value`),
 					FULLTEXT KEY `value_formatted` (`value_formatted`)
-				) TYPE=MyISAM;
+				)
 			");
 		}
 		
@@ -122,7 +121,7 @@
 			$label->setValue($input->generate() . ' Allow value to be manually overridden');
 			$wrapper->appendChild($label);
 			*/
-
+			
 		/*---------------------------------------------------------------------
 			Hide input
 		---------------------------------------------------------------------*/
@@ -209,7 +208,7 @@
 			
 			return array(
 				'handle'			=> null,
-				'value'		=> null,
+				'value'				=> null,
 				'value_formatted'	=> null
 			);
 		}
@@ -223,13 +222,7 @@
 			
 			$element = new XMLElement($this->get('element_name'));
 			$element->setAttribute('handle', $data['handle']);
-			
-			if ($this->get('formatter') != 'none') {
-				$element->setValue($data['value_formatted']);
-				
-			} else {
-				$element->setValue($data['value']);
-			}
+			$element->setValue($data['value_formatted']);
 			
 			$wrapper->appendChild($element);
 		}
@@ -237,20 +230,11 @@
 		public function prepareTableValue($data, XMLElement $link = null) {
 			if (empty($data)) return;
 			
-			if ($this->get('formatter') != 'none') {
-				return parent::prepareTableValue(
-					array(
+			return parent::prepareTableValue(
+				array(
 					'value'		=> $data['value_formatted']
-					), $link
-				);
-				
-			} else {
-				return parent::prepareTableValue(
-					array(
-					'value'		=> $data['value']
-					), $link
-				);
-			}
+				), $link
+			);
 		}
 		
 	/*-------------------------------------------------------------------------
@@ -316,7 +300,7 @@
 			// Save:
 			$result = $this->Database->update(array(
 				'handle'			=> Lang::createHandle($value),
-				'value'		=> $value,
+				'value'				=> $value,
 				'value_formatted'	=> $value_formatted
 			), "tbl_entries_data_{$field_id}", "
 				`entry_id` = '{$entry_id}'
@@ -412,7 +396,7 @@
 			foreach ($records as $record) {
 				$data = $record->getData($this->get('id'));
 				
-				$value = $data['value'];
+				$value = $data['value_formatted'];
 				$handle = $data['handle'];
 				$element = $this->get('element_name');
 				

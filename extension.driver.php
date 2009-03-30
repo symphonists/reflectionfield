@@ -10,8 +10,8 @@
 		public function about() {
 			return array(
 				'name'			=> 'Field: Reflection',
-				'version'		=> '1.004',
-				'release-date'	=> '2009-02-02',
+				'version'		=> '1.0.5',
+				'release-date'	=> '2009-03-30',
 				'author'		=> array(
 					'name'			=> 'Rowan Lewis',
 					'website'		=> 'http://pixelcarnage.com/',
@@ -30,12 +30,12 @@
 		public function install() {
 			$this->_Parent->Database->query("
 				CREATE TABLE IF NOT EXISTS `tbl_fields_reflection` (
-					`id` int(11) unsigned NOT NULL auto_increment,
-					`field_id` int(11) unsigned NOT NULL,
-					`expression` varchar(255) default NULL,
-					`formatter` varchar(255) default NULL,
-					`override` enum('yes', 'no') default 'no',
-          `hide` enum('yes', 'no') default 'no',
+					`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+					`field_id` INT(11) UNSIGNED NOT NULL,
+					`expression` VARCHAR(255) DEFAULT NULL,
+					`formatter` VARCHAR(255) DEFAULT NULL,
+					`override` ENUM('yes', 'no') DEFAULT 'no',
+					`hide` ENUM('yes', 'no') DEFAULT 'no',
 					PRIMARY KEY (`id`),
 					KEY `field_id` (`field_id`)
 				)
