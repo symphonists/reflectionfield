@@ -330,7 +330,7 @@
 				";
 				
 			} else if (strpos($data[0], 'search:') == 0) {
-				if (is_array($data)) $data = trim(substr($data[0], 7));
+				$data = trim(substr(implode(' + ', $data), 7));
 				
 				if ($data == '') return true;
 				
@@ -348,6 +348,8 @@
 				$data = preg_replace('/(\W)not(\W)/i', '\\1-\\2', $data);
 				$data = preg_replace('/(^)not(\W)|(\W)not($)/i', '\\2\\3', $data);
 				$data = preg_replace('/([\+\-])\s*/', '\\1', $mode . $data);
+				
+				//echo $data; exit;
 				
 				$data = $this->cleanValue($data);
 				$this->_key++;
