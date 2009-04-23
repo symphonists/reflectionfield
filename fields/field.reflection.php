@@ -329,6 +329,27 @@
 					)
 				";
 				
+			} else if (strpos($data[0], 'search:') == 0) {
+				if (is_array($data)) $data = trim(substr($data[0], 7));
+				
+				if ($data == '') return true;
+				
+				// Replace ' and ' with ' +':
+				$data = preg_replace('/(\s)and(\s)/i', ' +', $data);
+				$data = preg_replace('/(^)and(\s)|(\s)and($)/i', '', $data);
+				$data = '+' . $data;
+				
+				$data = $this->cleanValue($data);
+				$this->_key++;
+				$joins .= "
+					LEFT JOIN
+						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
+						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+				";
+				$where .= "
+					AND MATCH (t{$field_id}_{$this->_key}.value) AGAINST ('{$data}' IN BOOLEAN MODE)
+				";
+				
 			} elseif ($andOperation) {
 				foreach ($data as $value) {
 					$this->_key++;
