@@ -334,10 +334,20 @@
 				
 				if ($data == '') return true;
 				
+				// Negative match?
+				if (preg_match('/^not(\W)/i', $data)) {
+					$mode = '-';
+					
+				} else {
+					$mode = '+';
+				}
+				
 				// Replace ' and ' with ' +':
-				$data = preg_replace('/(\s)and(\s)/i', ' +', $data);
-				$data = preg_replace('/(^)and(\s)|(\s)and($)/i', '', $data);
-				$data = '+' . $data;
+				$data = preg_replace('/(\W)and(\W)/i', '\\1+\\2', $data);
+				$data = preg_replace('/(^)and(\W)|(\W)and($)/i', '\\2\\3', $data);
+				$data = preg_replace('/(\W)not(\W)/i', '\\1-\\2', $data);
+				$data = preg_replace('/(^)not(\W)|(\W)not($)/i', '\\2\\3', $data);
+				$data = preg_replace('/([\+\-])\s*/', '\\1', $mode . $data);
 				
 				$data = $this->cleanValue($data);
 				$this->_key++;
