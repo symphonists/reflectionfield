@@ -328,9 +328,11 @@
 						OR t{$field_id}_{$this->_key}.value REGEXP '{$pattern}'
 					)
 				";
-				
-			} else if (strpos($data[0], 'search:') == 0) {
-				$data = trim(substr(implode(' + ', $data), 7));
+			}
+			
+			else if (preg_match('/^(not-)?(boolean|search):\s*/', $data[0], $matches)) {
+				$data = trim(array_pop(explode(':', implode(' + ', $data), 2)));
+				$negate = ($matches[1] == '' ? '' : 'NOT');
 				
 				if ($data == '') return true;
 				
@@ -349,8 +351,6 @@
 				$data = preg_replace('/(^)not(\W)|(\W)not($)/i', '\\2\\3', $data);
 				$data = preg_replace('/([\+\-])\s*/', '\\1', $mode . $data);
 				
-				//echo $data; exit;
-				
 				$data = $this->cleanValue($data);
 				$this->_key++;
 				$joins .= "
@@ -359,10 +359,34 @@
 						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
 				";
 				$where .= "
-					AND MATCH (t{$field_id}_{$this->_key}.value) AGAINST ('{$data}' IN BOOLEAN MODE)
+					AND {$negate}(MATCH (t{$field_id}_{$this->_key}.value) AGAINST ('{$data}' IN BOOLEAN MODE))
 				";
+			}
+			
+			else if (preg_match('/^(not-)?((starts|ends)-with|contains):\s*/', $data[0], $matches)) {
+				$data = trim(array_pop(explode(':', $data[0], 2)));
+				$negate = ($matches[1] == '' ? '' : 'NOT');
+				$data = $this->cleanValue($data);
 				
-			} elseif ($andOperation) {
+				if ($matches[2] == 'ends-with') $data = "%{$data}";
+				if ($matches[2] == 'starts-with') $data = "{$data}%";
+				if ($matches[2] == 'contains') $data = "%{$data}%";
+				
+				$this->_key++;
+				$joins .= "
+					LEFT JOIN
+						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
+						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+				";
+				$where .= "
+					AND {$negate}(
+						t{$field_id}_{$this->_key}.handle LIKE '{$data}'
+						OR t{$field_id}_{$this->_key}.value LIKE '{$data}'
+					)
+				";
+			}
+			
+			elseif ($andOperation) {
 				foreach ($data as $value) {
 					$this->_key++;
 					$value = $this->cleanValue($value);
@@ -378,8 +402,9 @@
 						)
 					";
 				}
-				
-			} else {
+			}
+			
+			else {
 				if (!is_array($data)) $data = array($data);
 				
 				foreach ($data as &$value) {
