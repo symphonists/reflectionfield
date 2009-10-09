@@ -276,10 +276,10 @@
 			
 			// Find replacements:
 			foreach ($matches[0] as $match) {
-				$results = @$xpath->query(trim($match, '{}'));
-				
-				if ($results->length) {
-					$replacements[$match] = $results->item(0)->nodeValue;
+				$result = $xpath->evaluate('string('.trim($match, '{}').')');
+
+				if (!is_null($result)) {
+					$replacements[$match] = $result;
 				} else {
 					$replacements[$match] = '';
 				}
