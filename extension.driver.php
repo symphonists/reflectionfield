@@ -105,6 +105,7 @@
 			$xml->appendChild($entry_xml);
 			
 			$dom = new DOMDocument();
+			$dom->strictErrorChecking = false;
 			$dom->loadXML($xml->generate(true));
 			
 			return new DOMXPath($dom);
