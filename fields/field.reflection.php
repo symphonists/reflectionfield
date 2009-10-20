@@ -279,7 +279,7 @@
 				$results = @$xpath->query(trim($match, '{}'));
 				
 				if ($results->length) {
-					$replacements[$match] = $results->item(0)->nodeValue;
+					$replacements[$match] = trim($results->item(0)->nodeValue);
 				} else {
 					$replacements[$match] = '';
 				}
