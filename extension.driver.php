@@ -10,12 +10,12 @@
 		public function about() {
 			return array(
 				'name'			=> 'Field: Reflection',
-				'version'		=> '1.0.7',
-				'release-date'	=> '2009-08-21',
+				'version'		=> '1.0.8',
+				'release-date'	=> '2009-12-09',
 				'author'		=> array(
 					'name'			=> 'Rowan Lewis',
-					'website'		=> 'http://pixelcarnage.com/',
-					'email'			=> 'rowan@pixelcarnage.com'
+					'website'		=> 'http://rowanlewis.com/',
+					'email'			=> 'me@rowanlewis.com'
 				),
 				'description' => '
 					Allows you to automatically combine multiple fields into one.
@@ -108,7 +108,13 @@
 			$dom->strictErrorChecking = false;
 			$dom->loadXML($xml->generate(true));
 			
-			return new DOMXPath($dom);
+			$xpath = new DOMXPath($dom);
+			
+			if (version_compare(phpversion(), '5.3', '>=')) {
+				$xpath->registerPhpFunctions();
+			}
+			
+			return $xpath;
 		}
 		
 	/*-------------------------------------------------------------------------

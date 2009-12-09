@@ -245,8 +245,9 @@
 			if ($this->get('formatter') != 'none') {
 				if (isset($this->_ParentCatalogue['entrymanager'])) {
 					$tfm = $this->_ParentCatalogue['entrymanager']->formatterManager;
-					
-				} else {
+				}
+				
+				else {
 					$tfm = new TextformatterManager($this->_engine);
 				}
 				
@@ -276,11 +277,13 @@
 			
 			// Find replacements:
 			foreach ($matches[0] as $match) {
-				$result = $xpath->evaluate('string('.trim($match, '{}').')');
-
+				$result = @$xpath->evaluate('string(' . trim($match, '{}') . ')');
+				
 				if (!is_null($result)) {
-					$replacements[$match] = $result;
-				} else {
+					$replacements[$match] = trim($result);
+				}
+				
+				else {
 					$replacements[$match] = '';
 				}
 			}
@@ -298,13 +301,15 @@
 			}
 			
 			// Save:
-			$result = $this->Database->update(array(
-				'handle'			=> Lang::createHandle($value),
-				'value'				=> $value,
-				'value_formatted'	=> $value_formatted
-			), "tbl_entries_data_{$field_id}", "
-				`entry_id` = '{$entry_id}'
-			");
+			$result = $this->Database->update(
+				array(
+					'handle'			=> Lang::createHandle($value),
+					'value'				=> $value,
+					'value_formatted'	=> $value_formatted
+				),
+				"tbl_entries_data_{$field_id}",
+				"`entry_id` = '{$entry_id}'"
+			);
 		}
 		
 	/*-------------------------------------------------------------------------

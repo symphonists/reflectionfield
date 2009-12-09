@@ -1,10 +1,10 @@
 Field: Reflection
 -------------------------------------------------------------------------------
 
-Version: 1.0.7
-Author: Rowan Lewis <rowan@pixelcarnage.com>
-Build Date: 21 August 2009
-Requirements: Latest source from git
+Version: 1.0.8
+Author: Rowan Lewis <me@rowanlewis.com>
+Build Date: 9 December 2009
+Requirements: Symphony 2.0.6
 
 
 Installation
