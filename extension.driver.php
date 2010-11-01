@@ -98,7 +98,7 @@
 				if (empty($field_id)) continue;
 				
 				$field =& $entry->_Parent->fieldManager->fetch($field_id);
-				$field->appendFormattedElement($entry_xml, $values, false);
+				$field->appendFormattedElement($entry_xml, $values, false, null);
 			}
 			
 			$xml = new XMLElement('data');
