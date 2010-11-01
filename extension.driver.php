@@ -10,15 +10,15 @@
 		public function about() {
 			return array(
 				'name'			=> 'Field: Reflection',
-				'version'		=> '1.0.8',
-				'release-date'	=> '2009-12-09',
+				'version'		=> '1.0.9',
+				'release-date'	=> '2010-10-01',
 				'author'		=> array(
 					'name'			=> 'Rowan Lewis',
 					'website'		=> 'http://rowanlewis.com/',
 					'email'			=> 'me@rowanlewis.com'
 				),
 				'description' => '
-					Allows you to automatically combine multiple fields into one.
+					Create a new value from the current entry using XPath.
 				'
 			);
 		}
