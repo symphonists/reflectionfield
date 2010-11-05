@@ -186,7 +186,7 @@
 				$label->appendChild(
 					Widget::Input(
 						"fields{$prefix}[$element_name]{$postfix}",
-						@$data['value'], 'text', $allow_override
+						@$data['value_formatted'], 'text', $allow_override
 					)
 				);
 				$wrapper->appendChild($label);
