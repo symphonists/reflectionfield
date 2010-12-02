@@ -97,7 +97,7 @@
 			foreach ($data as $field_id => $values) {
 				if (empty($field_id)) continue;
 				
-				$field =& $entry->_Parent->fieldManager->fetch($field_id);
+				$field = $entry->_Parent->fieldManager->fetch($field_id);
 				$field->appendFormattedElement($entry_xml, $values, false, null);
 			}
 			

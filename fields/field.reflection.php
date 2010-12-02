@@ -182,11 +182,14 @@
 			}
 			
 			if ($this->get('hide') != 'yes') {
+				$value = isset($data['value'])
+					? $data['value']
+					: null;
 				$label = Widget::Label($this->get('label'));
 				$label->appendChild(
 					Widget::Input(
 						"fields{$prefix}[$element_name]{$postfix}",
-						@$data['value'], 'text', $allow_override
+						$value, 'text', $allow_override
 					)
 				);
 				$wrapper->appendChild($label);
@@ -391,7 +394,7 @@
 				";
 			}
 			
-			elseif ($andOperation) {
+			else if ($andOperation) {
 				foreach ($data as $value) {
 					$this->_key++;
 					$value = $this->cleanValue($value);
