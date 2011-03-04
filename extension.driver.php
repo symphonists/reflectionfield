@@ -10,8 +10,8 @@
 		public function about() {
 			return array(
 				'name'			=> 'Field: Reflection',
-				'version'		=> '1.0.9',
-				'release-date'	=> '2010-10-01',
+				'version'		=> '1.0.10',
+				'release-date'	=> '2011-03-04',
 				'author'		=> array(
 					'name'			=> 'Rowan Lewis',
 					'website'		=> 'http://rowanlewis.com/',
@@ -24,11 +24,11 @@
 		}
 		
 		public function uninstall() {
-			$this->_Parent->Database->query("DROP TABLE `tbl_fields_reflection`");
+			Symphony::Database()->query("DROP TABLE `tbl_fields_reflection`");
 		}
 		
 		public function install() {
-			$this->_Parent->Database->query("
+			Symphony::Database()->query("
 				CREATE TABLE IF NOT EXISTS `tbl_fields_reflection` (
 					`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 					`field_id` INT(11) UNSIGNED NOT NULL,
@@ -69,8 +69,9 @@
 	-------------------------------------------------------------------------*/
 		
 		public function getXPath($entry) {
+			$fieldManager = new FieldManager(Symphony::Engine());
 			$entry_xml = new XMLElement('entry');
-			$section_id = $entry->_fields['section_id'];
+			$section_id = $entry->get('section_id');
 			$data = $entry->getData(); $fields = array();
 			
 			$entry_xml->setAttribute('id', $entry->get('id'));
@@ -79,7 +80,7 @@
 			
 			if (is_array($associated) and !empty($associated)) {
 				foreach ($associated as $section => $count) {
-					$handle = $this->_Parent->Database->fetchVar('handle', 0, "
+					$handle = Symphony::Database()->fetchVar('handle', 0, "
 						SELECT
 							s.handle
 						FROM
@@ -97,7 +98,7 @@
 			foreach ($data as $field_id => $values) {
 				if (empty($field_id)) continue;
 				
-				$field = $entry->_Parent->fieldManager->fetch($field_id);
+				$field = $fieldManager->fetch($field_id);
 				$field->appendFormattedElement($entry_xml, $values, false, null);
 			}
 			

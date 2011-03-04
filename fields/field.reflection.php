@@ -3,7 +3,6 @@
 	if (!defined('__IN_SYMPHONY__')) die('<h2>Symphony Error</h2><p>You cannot directly access this file</p>');
 	
 	class FieldReflection extends Field {
-		protected $_driver = null;
 		protected static $ready = true;
 		
 	/*-------------------------------------------------------------------------
@@ -14,7 +13,6 @@
 			parent::__construct($parent);
 			
 			$this->_name = 'Reflection';
-			$this->_driver = $this->_engine->ExtensionManager->create('reflectionfield');
 			
 			// Set defaults:
 			$this->set('show_column', 'yes');
@@ -25,7 +23,7 @@
 		public function createTable() {
 			$field_id = $this->get('id');
 			
-			return $this->_engine->Database->query("
+			return Symphony::Database()->query("
 				CREATE TABLE IF NOT EXISTS `tbl_entries_data_{$field_id}` (
 					`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 					`entry_id` INT(11) UNSIGNED NOT NULL,
@@ -182,8 +180,8 @@
 			}
 			
 			if ($this->get('hide') != 'yes') {
-				$value = isset($data['value'])
-					? $data['value']
+				$value = isset($data['value_formatted'])
+					? $data['value_formatted']
 					: null;
 				$label = Widget::Label($this->get('label'));
 				$label->appendChild(
@@ -201,7 +199,8 @@
 	-------------------------------------------------------------------------*/
 		
 		public function checkPostFieldData($data, &$message, $entry_id = null) {
-			$this->_driver->registerField($this);
+			$driver = Symphony::ExtensionManager()->create('reflectionfield');
+			$driver->registerField($this);
 			
 			return self::__OK__;
 		}
@@ -246,13 +245,7 @@
 		
 		public function applyFormatting($data) {
 			if ($this->get('formatter') != 'none') {
-				if (isset($this->_ParentCatalogue['entrymanager'])) {
-					$tfm = $this->_ParentCatalogue['entrymanager']->formatterManager;
-				}
-				
-				else {
-					$tfm = new TextformatterManager($this->_engine);
-				}
+				$tfm = new TextformatterManager(Symphony::Engine());
 				
 				$formatter = $tfm->create($this->get('formatter'));
 				$formatted = $formatter->run($data);
@@ -266,7 +259,8 @@
 		public function compile($entry) {
 			self::$ready = false;
 			
-			$xpath = $this->_driver->getXPath($entry);
+			$driver = Symphony::ExtensionManager()->create('reflectionfield');
+			$xpath = $driver->getXPath($entry);
 			
 			self::$ready = true;
 			

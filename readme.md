@@ -2,9 +2,9 @@
 
 Create a new value from the current entry using XPath.
 
-__Version:__ 1.0.9  
-__Date:__ 1 November 2010  
-__Requirements:__ Symphony 2.1  
+__Version:__ 1.0.10  
+__Date:__ 4 March 2011  
+__Requirements:__ Symphony 2.2  
 __Author:__ Rowan Lewis <me@rowanlewis.com>  
 __GitHub Repository:__ <http://github.com/rowan-lewis/reflectionfield>  
 
