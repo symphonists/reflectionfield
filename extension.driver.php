@@ -10,12 +10,12 @@
 		public function about() {
 			return array(
 				'name'			=> 'Field: Reflection',
-				'version'		=> '1.0.10',
-				'release-date'	=> '2011-03-04',
+				'version'		=> '1.0.11',
+				'release-date'	=> '2011-04-11',
 				'author'		=> array(
 					'name'			=> 'Rowan Lewis',
-					'website'		=> 'http://rowanlewis.com/',
-					'email'			=> 'me@rowanlewis.com'
+					'website'		=> 'http://nbsp.io/',
+					'email'			=> 'me@nbsp.io'
 				),
 				'description' => '
 					Create a new value from the current entry using XPath.
@@ -38,7 +38,7 @@
 					`hide` ENUM('yes', 'no') DEFAULT 'no',
 					PRIMARY KEY (`id`),
 					KEY `field_id` (`field_id`)
-				)
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 			");
 			
 			return true;

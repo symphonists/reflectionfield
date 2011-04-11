@@ -34,7 +34,7 @@
 					KEY `entry_id` (`entry_id`),
 					FULLTEXT KEY `value` (`value`),
 					FULLTEXT KEY `value_formatted` (`value_formatted`)
-				)
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 			");
 		}
 		
