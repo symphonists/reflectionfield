@@ -387,6 +387,49 @@
 					)
 				";
 			}
+
+			else if (preg_match('/^(?:equal to or )?(?:less than|more than|equal to) \d+(?:\.\d+)?$/i', $data[0])) {
+
+				$comparisons = array();
+				foreach ($data as $string) {
+					if (preg_match('/^(equal to or )?(less than|more than|equal to) (\d+(?:\.\d+)?)$/i', $string, $matches)) {
+						$number = trim($matches[3]);
+						if (!is_numeric($number) || $number === '') continue;
+						$number = floatval($number);
+
+						$operator = '<';
+						switch ($matches[2]) {
+							case 'more than': $operator = '>'; break;
+							case 'less than': $operator = '<'; break;
+							case 'equal to': $operator = '='; break;
+						}
+
+						if ($matches[1] == 'equal to or ' && $operator != '=') {
+							$operator .= '=';
+						}
+
+						$comparisons[] = "{$operator} {$number}";
+					}
+				}
+
+				if (!empty($comparisons)) {
+					$this->_key++;
+					$joins .= "
+						LEFT JOIN
+							`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
+							ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+					";
+
+					$value = " t{$field_id}_{$this->_key}.value ";
+					$comparisons = $value . implode(' '.($andOperation ? 'AND' : 'OR').$value, $comparisons);
+
+					$where .= "
+						AND (
+							{$comparisons}
+						)
+					";
+				}
+			}
 			
 			else if ($andOperation) {
 				foreach ($data as $value) {
