@@ -66,16 +66,50 @@
 			parent::displaySettingsPanel($wrapper, $errors);
 			
 			$order = $this->get('sortorder');
+
+		/*---------------------------------------------------------------------
+			XSLT
+		---------------------------------------------------------------------*/
+
+			$group = new XMLElement('div');
+			$group->setAttribute('class', 'group');
+
+			$div = new XMLElement('div');
+			$label = Widget::Label('XSLT Utility');
+
+			$utilities = General::listStructure(UTILITIES, array('xsl'), false, 'asc', UTILITIES);
+			$utilities = $utilities['filelist'];
+
+			$xsltfile = $this->get('xsltfile');
+			$options = array();
+			$options[] = array('', empty($xsltfile), __('Disabled'));
+
+			foreach ($utilities as $utility) {
+				$options[] = array($utility, ($xsltfile == $utility), $utility);
+			}
+
+			$label->appendChild(Widget::Select(
+				"fields[{$order}][xsltfile]",
+				$options
+			));
+			
+			$help = new XMLElement('p');
+			$help->setAttribute('class', 'help');
+			
+			$help->setValue(__('Select XSLT which will be applied to <code>entry</code> XML before <code>Expression</code> is evaluated.'));
+			
+			$div->appendChild($label);
+			$div->appendChild($help);
+			$group->appendChild($div);
+			
 			
 		/*---------------------------------------------------------------------
 			Expression
 		---------------------------------------------------------------------*/
-			
-			$group = new XMLElement('div');
-			$group->setAttribute('class', 'group');
-			
+
 			$div = new XMLElement('div');
 			$label = Widget::Label('Expression');
+
 			$label->appendChild(Widget::Input(
 				"fields[{$order}][expression]",
 				$this->get('expression')
@@ -92,17 +126,21 @@
 			$div->appendChild($label);
 			$div->appendChild($help);
 			$group->appendChild($div);
+
+			$wrapper->appendChild($group);
 			
 		/*---------------------------------------------------------------------
 			Text Formatter
 		---------------------------------------------------------------------*/
+			
+			$group = new XMLElement('div');
+			$group->setAttribute('class', 'group');
 			
 			$group->appendChild($this->buildFormatterSelect(
 				$this->get('formatter'),
 				"fields[{$order}][formatter]",
 				'Text Formatter'
 			));
-			$wrapper->appendChild($group);
 			
 		/*---------------------------------------------------------------------
 			Allow Override
@@ -124,6 +162,8 @@
 			Hide input
 		---------------------------------------------------------------------*/
 			
+			$div = new XMLElement('div');
+
 			$label = Widget::Label();
 			$input = Widget::Input("fields[{$order}][hide]", 'yes', 'checkbox');
 			
@@ -132,9 +172,12 @@
 			}
 			
 			$label->setValue($input->generate() . ' Hide this field on publish page');
-			$wrapper->appendChild($label);
+			$div->appendChild($label);
 			
-			$this->appendShowColumnCheckbox($wrapper);
+			$this->appendShowColumnCheckbox($div);
+			$group->appendChild($div);
+
+			$wrapper->appendChild($group);
 		}
 		
 		public function commit() {
@@ -147,6 +190,7 @@
 			
 			$fields = array(
 				'field_id'			=> $id,
+				'xsltfile'			=> $this->get('xsltfile'),
 				'expression'		=> $this->get('expression'),
 				'formatter'			=> $this->get('formatter'),
 				'override'			=> $this->get('override'),
@@ -260,7 +304,7 @@
 			self::$ready = false;
 			
 			$driver = Symphony::ExtensionManager()->create('reflectionfield');
-			$xpath = $driver->getXPath($entry);
+			$xpath = $driver->getXPath($entry, $this->get('xsltfile'));
 			
 			self::$ready = true;
 			
