@@ -10,7 +10,7 @@
 		public function about() {
 			return array(
 				'name'			=> 'Field: Reflection',
-				'version'		=> '1.0.11',
+				'version'		=> '1.1',
 				'release-date'	=> '2011-04-11',
 				'author'		=> array(
 					'name'			=> 'Rowan Lewis',
@@ -32,6 +32,7 @@
 				CREATE TABLE IF NOT EXISTS `tbl_fields_reflection` (
 					`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 					`field_id` INT(11) UNSIGNED NOT NULL,
+					`xsltfile` VARCHAR(255) DEFAULT NULL,
 					`expression` VARCHAR(255) DEFAULT NULL,
 					`formatter` VARCHAR(255) DEFAULT NULL,
 					`override` ENUM('yes', 'no') DEFAULT 'no',
@@ -41,6 +42,15 @@
 				) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 			");
 			
+			return true;
+		}
+
+		public function update($previousVersion) {
+			// Update 1.0 installations
+			if (version_compare($previousVersion, '1.1', '<')) {
+				Symphony::Database()->query("ALTER TABLE `tbl_fields_reflection` ADD `xsltfile` VARCHAR(255) DEFAULT NULL");
+			}
+
 			return true;
 		}
 		
@@ -68,7 +78,7 @@
 		Utilities:
 	-------------------------------------------------------------------------*/
 		
-		public function getXPath($entry) {
+		public function getXPath($entry, $XSLTfilename = NULL) {
 			$fieldManager = new FieldManager(Symphony::Engine());
 			$entry_xml = new XMLElement('entry');
 			$section_id = $entry->get('section_id');
@@ -104,10 +114,27 @@
 			
 			$xml = new XMLElement('data');
 			$xml->appendChild($entry_xml);
-			
+
 			$dom = new DOMDocument();
 			$dom->strictErrorChecking = false;
 			$dom->loadXML($xml->generate(true));
+
+			if (!empty($XSLTfilename)) {
+				$XSLTfilename = UTILITIES . '/'. preg_replace(array('%/+%', '%(^|/)../%'), '/', $XSLTfilename);
+				if (file_exists($XSLTfilename)) {
+					$XSLProc = new XsltProcessor;
+
+					$xslt = new DomDocument;
+					$xslt->load($XSLTfilename);
+
+					$XSLProc->importStyleSheet($xslt);
+					$temp = $XSLProc->transformToDoc($dom);
+
+					if ($temp instanceof DOMDocument) {
+						$dom = $temp;
+					}
+				}
+			}
 			
 			$xpath = new DOMXPath($dom);
 			
