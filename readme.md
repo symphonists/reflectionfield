@@ -2,11 +2,11 @@
 
 Create a new value from the current entry using XPath.
 
-__Version:__ 1.0.11  
-__Date:__ 11 April 2011  
-__Requirements:__ Symphony 2.2  
-__Author:__ Rowan Lewis <me@nbsp.io>  
-__GitHub Repository:__ <http://github.com/rowan-lewis/reflectionfield>  
+__Version:__ 1.0.2
+__Date:__ 11 April 2011
+__Requirements:__ Symphony 2.2
+__Author:__ Rowan Lewis <me@nbsp.io>
+__GitHub Repository:__ <http://github.com/rowan-lewis/reflectionfield>
 
 
 ## Installation
