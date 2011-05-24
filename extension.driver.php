@@ -10,7 +10,7 @@
 		public function about() {
 			return array(
 				'name'			=> 'Field: Reflection',
-				'version'		=> '1.0.2',
+				'version'		=> '1.0.12',
 				'release-date'	=> '2011-04-11',
 				'author'		=> array(
 					'name'			=> 'Rowan Lewis',
