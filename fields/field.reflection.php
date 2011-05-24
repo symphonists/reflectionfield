@@ -3,7 +3,7 @@
 	if (!defined('__IN_SYMPHONY__')) die('<h2>Symphony Error</h2><p>You cannot directly access this file</p>');
 	
 	class FieldReflection extends Field {
-		protected static $ready = true;
+		protected static $compiling = 0;
 		
 	/*-------------------------------------------------------------------------
 		Definition:
@@ -264,7 +264,7 @@
 	-------------------------------------------------------------------------*/
 		
 		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
-			if (!self::$ready) return;
+			if (self::$compiling == $this->get('id')) return;
 			
 			$element = new XMLElement($this->get('element_name'));
 			$element->setAttribute('handle', $data['handle']);
@@ -301,12 +301,12 @@
 		}
 		
 		public function compile($entry) {
-			self::$ready = false;
+			self::$compiling = $this->get('id');
 			
 			$driver = Symphony::ExtensionManager()->create('reflectionfield');
 			$xpath = $driver->getXPath($entry, $this->get('xsltfile'));
 			
-			self::$ready = true;
+			self::$compiling = 0;
 			
 			$entry_id = $entry->get('id');
 			$field_id = $this->get('id');
