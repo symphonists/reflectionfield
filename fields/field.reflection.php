@@ -300,7 +300,7 @@
 			return null;		
 		}
 		
-		public function compile($entry) {
+		public function compile(&$entry) {
 			self::$compiling = $this->get('id');
 			
 			$driver = Symphony::ExtensionManager()->create('reflectionfield');
@@ -340,6 +340,12 @@
 			if (!$value_formatted = $this->applyFormatting($value)) {
 				$value_formatted = General::sanitize($value);
 			}
+
+			$data = array(
+				'handle'			=> Lang::createHandle($value),
+				'value'				=> $value,
+				'value_formatted'	=> $value_formatted
+			);
 			
 			// Save:
 			$result = $this->Database->update(
@@ -351,6 +357,8 @@
 				"tbl_entries_data_{$field_id}",
 				"`entry_id` = '{$entry_id}'"
 			);
+
+			$entry->setData($field_id, $data);
 		}
 		
 	/*-------------------------------------------------------------------------
