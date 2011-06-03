@@ -440,11 +440,11 @@
 				";
 			}
 
-			else if (preg_match('/^(?:equal to or )?(?:less than|more than|equal to) \d+(?:\.\d+)?$/i', $data[0])) {
+			else if (preg_match('/^(?:equal to or )?(?:less than|more than|equal to) -?\d+(?:\.\d+)?$/i', $data[0])) {
 
 				$comparisons = array();
 				foreach ($data as $string) {
-					if (preg_match('/^(equal to or )?(less than|more than|equal to) (\d+(?:\.\d+)?)$/i', $string, $matches)) {
+					if (preg_match('/^(equal to or )?(less than|more than|equal to) (-?\d+(?:\.\d+)?)$/i', $string, $matches)) {
 						$number = trim($matches[3]);
 						if (!is_numeric($number) || $number === '') continue;
 						$number = floatval($number);
