@@ -300,7 +300,7 @@
 			return null;		
 		}
 		
-		public function compile($entry) {
+		public function compile(&$entry) {
 			self::$compiling = $this->get('id');
 			
 			$driver = Symphony::ExtensionManager()->create('reflectionfield');
@@ -340,6 +340,12 @@
 			if (!$value_formatted = $this->applyFormatting($value)) {
 				$value_formatted = General::sanitize($value);
 			}
+
+			$data = array(
+				'handle'			=> Lang::createHandle($value),
+				'value'				=> $value,
+				'value_formatted'	=> $value_formatted
+			);
 			
 			// Save:
 			$result = $this->Database->update(
@@ -351,6 +357,8 @@
 				"tbl_entries_data_{$field_id}",
 				"`entry_id` = '{$entry_id}'"
 			);
+
+			$entry->setData($field_id, $data);
 		}
 		
 	/*-------------------------------------------------------------------------
@@ -432,11 +440,11 @@
 				";
 			}
 
-			else if (preg_match('/^(?:equal to or )?(?:less than|more than|equal to) \d+(?:\.\d+)?$/i', $data[0])) {
+			else if (preg_match('/^(?:equal to or )?(?:less than|more than|equal to) -?\d+(?:\.\d+)?$/i', $data[0])) {
 
 				$comparisons = array();
 				foreach ($data as $string) {
-					if (preg_match('/^(equal to or )?(less than|more than|equal to) (\d+(?:\.\d+)?)$/i', $string, $matches)) {
+					if (preg_match('/^(equal to or )?(less than|more than|equal to) (-?\d+(?:\.\d+)?)$/i', $string, $matches)) {
 						$number = trim($matches[3]);
 						if (!is_numeric($number) || $number === '') continue;
 						$number = floatval($number);
