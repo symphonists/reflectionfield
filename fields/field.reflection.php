@@ -419,6 +419,9 @@
 			
 			else if (preg_match('/^(not-)?((starts|ends)-with|contains):\s*/', $data[0], $matches)) {
 				$data = trim(array_pop(explode(':', $data[0], 2)));
+
+				if ($data == '') return true;
+
 				$negate = ($matches[1] == '' ? '' : 'NOT');
 				$data = $this->cleanValue($data);
 				
