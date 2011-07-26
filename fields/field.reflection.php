@@ -12,7 +12,7 @@
 		public function __construct(&$parent) {
 			parent::__construct($parent);
 
-			$this->_name = 'Reflection';
+			$this->_name = __('Reflection');
 
 			// Set defaults:
 			$this->set('show_column', 'yes');
@@ -78,7 +78,7 @@
 			$group->appendChild($this->buildFormatterSelect(
 				$this->get('formatter'),
 				"fields[{$order}][formatter]",
-				'Text Formatter'
+				__('Text Formatter')
 			));
 
 		/*---------------------------------------------------------------------
@@ -129,9 +129,9 @@
 			$help = new XMLElement('p');
 			$help->setAttribute('class', 'help');
 
-			$help->setValue('
+			$help->setValue(__('
 				To access the other fields, use XPath: <code>{entry/field-one} static text {entry/field-two}</code>.
-			');
+			'));
 
 			$div->appendChild($label);
 			$div->appendChild($help);
@@ -151,7 +151,7 @@
 				$input->setAttribute('checked', 'checked');
 			}
 
-			$label->setValue($input->generate() . ' Fetch associated entry counts for XPath');
+			$label->setValue($input->generate() . ' ' . __('Fetch associated entry counts for XPath'));
 			$compact->appendChild($label);
 
 		/*---------------------------------------------------------------------
@@ -181,7 +181,7 @@
 				$input->setAttribute('checked', 'checked');
 			}
 
-			$label->setValue($input->generate() . ' Hide this field on publish page');
+			$label->setValue($input->generate() . ' ' . __('Hide this field on publish page'));
 			$compact->appendChild($label);
 
 			$this->appendShowColumnCheckbox($compact);
