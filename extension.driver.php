@@ -10,8 +10,8 @@
 		public function about() {
 			return array(
 				'name'			=> 'Field: Reflection',
-				'version'		=> '1.1',
-				'release-date'	=> '2011-04-11',
+				'version'		=> '1.2',
+				'release-date'	=> '2011-07-26',
 				'author'		=> array(
 					'name'			=> 'Rowan Lewis',
 					'website'		=> 'http://nbsp.io/',
