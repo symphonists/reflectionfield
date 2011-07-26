@@ -359,11 +359,7 @@
 
 			// Save:
 			$result = Symphony::Database()->update(
-				array(
-					'handle'			=> Lang::createHandle($value),
-					'value'				=> $value,
-					'value_formatted'	=> $value_formatted
-				),
+				$data,
 				"tbl_entries_data_{$field_id}",
 				"`entry_id` = '{$entry_id}'"
 			);
