@@ -37,6 +37,7 @@
 					`formatter` VARCHAR(255) DEFAULT NULL,
 					`override` ENUM('yes', 'no') DEFAULT 'no',
 					`hide` ENUM('yes', 'no') DEFAULT 'no',
+					`fetch_associated_counts` ENUM('yes','no') DEFAULT 'no',
 					PRIMARY KEY (`id`),
 					KEY `field_id` (`field_id`)
 				) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -49,6 +50,11 @@
 			// Update 1.0 installations
 			if (version_compare($previousVersion, '1.1', '<')) {
 				Symphony::Database()->query("ALTER TABLE `tbl_fields_reflection` ADD `xsltfile` VARCHAR(255) DEFAULT NULL");
+			}
+
+			// Update 1.1 installations
+			if (version_compare($previousVersion, '1.2', '<')) {
+				Symphony::Database()->query("ALTER TABLE `tbl_fields_reflection` ADD `fetch_associated_counts` ENUM('yes','no') DEFAULT 'no'");
 			}
 
 			return true;
@@ -78,7 +84,7 @@
 		Utilities:
 	-------------------------------------------------------------------------*/
 
-		public function getXPath($entry, $XSLTfilename = NULL) {
+		public function getXPath($entry, $XSLTfilename = NULL, $fetch_associated_counts = NULL) {
 			$fieldManager = new FieldManager(Symphony::Engine());
 			$entry_xml = new XMLElement('entry');
 			$section_id = $entry->get('section_id');
@@ -86,21 +92,24 @@
 
 			$entry_xml->setAttribute('id', $entry->get('id'));
 
-			$associated = $entry->fetchAllAssociatedEntryCounts();
+			// Add associated entry counts
+			if($fetch_associated_counts == 'yes') {
+				$associated = $entry->fetchAllAssociatedEntryCounts();
 
-			if (is_array($associated) and !empty($associated)) {
-				foreach ($associated as $section => $count) {
-					$handle = Symphony::Database()->fetchVar('handle', 0, "
-						SELECT
-							s.handle
-						FROM
-							`tbl_sections` AS s
-						WHERE
-							s.id = '{$section}'
-						LIMIT 1
-					");
+				if (is_array($associated) and !empty($associated)) {
+					foreach ($associated as $section => $count) {
+						$handle = Symphony::Database()->fetchVar('handle', 0, "
+							SELECT
+								s.handle
+							FROM
+								`tbl_sections` AS s
+							WHERE
+								s.id = '{$section}'
+							LIMIT 1
+						");
 
-					$entry_xml->setAttribute($handle, (string)$count);
+						$entry_xml->setAttribute($handle, (string)$count);
+					}
 				}
 			}
 
