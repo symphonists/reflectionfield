@@ -9,10 +9,10 @@
 		Definition:
 	-------------------------------------------------------------------------*/
 		
-		public function __construct(&$parent) {
-			parent::__construct($parent);
+		public function __construct() {
+			parent::__construct();
 			
-			$this->_name = 'Reflection';
+			$this->_name = __('Reflection');
 			
 			// Set defaults:
 			$this->set('show_column', 'yes');
