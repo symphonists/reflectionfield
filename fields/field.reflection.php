@@ -192,6 +192,9 @@
 				);
 				$wrapper->appendChild($label);
 			}
+			else {
+				$wrapper->setAttribute('class', 'hidden');
+			}
 		}
 		
 	/*-------------------------------------------------------------------------
