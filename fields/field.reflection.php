@@ -9,10 +9,10 @@
 		Definition:
 	-------------------------------------------------------------------------*/
 		
-		public function __construct(&$parent) {
-			parent::__construct($parent);
+		public function __construct() {
+			parent::__construct();
 			
-			$this->_name = 'Reflection';
+			$this->_name = __('Reflection');
 			
 			// Set defaults:
 			$this->set('show_column', 'yes');
@@ -153,7 +153,7 @@
 				'hide'				=> $this->get('hide')
 			);
 			
-			$this->Database->query("
+			Symphony::Database()->query("
 				DELETE FROM
 					`tbl_fields_{$handle}`
 				WHERE
@@ -161,7 +161,7 @@
 				LIMIT 1
 			");
 			
-			return $this->Database->insert($fields, "tbl_fields_{$handle}");
+			return Symphony::Database()->insert($fields, "tbl_fields_{$handle}");
 		}
 		
 	/*-------------------------------------------------------------------------
@@ -191,6 +191,9 @@
 					)
 				);
 				$wrapper->appendChild($label);
+			}
+			else {
+				$wrapper->setAttribute('class', 'hidden');
 			}
 		}
 		
@@ -298,7 +301,7 @@
 			}
 			
 			// Save:
-			$result = $this->Database->update(
+			$result = Symphony::Database()->update(
 				array(
 					'handle'			=> Lang::createHandle($value),
 					'value'				=> $value,
