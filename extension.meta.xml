@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension id="reflectionfield" xmlns="http://symphony-cms.com/schemas/extension/1.0">
+	<name>Reflection</name>
+	<description>Create a new value from the current entry using XPath.</description>
+	<repo type="github">https://github.com/rowan-lewis/reflectionfield</repo>
+	<url type="discuss">http://symphony-cms.com/discuss/thread/809/</url>
+	<types>
+		<type>Field Types</type>
+	</types>
+	<authors>
+		<author>
+			<name github="rowan-lewis" symphony="buzzomatic">Rowan Lewis</name>
+			<website>http://nbsp.io</website>
+		</author>
+	</authors>
+	<releases>
+		<release version="1.2" date="2011-07-26" min="2.2"/>
+		<release version="1.0.11" date="2011-04-11" min="2.2">
+			- Force tables to be created with the MyISAM table engine.
+		</release>
+		<release version="1.0.10" date="2011-03-04" min="2.2">
+			- Fixed a sanitisation issue on publish pages.
+			- Made compatible with Symphony 2.2.
+		</release>
+		<release version="1.0.9" date="2010-11-01" min="2.1.*">
+			- Bug with usage of appendFormattedElement fixed by michael-e.
+		</release>
+		<release version="1.0.8" date="2009-12-09" min="2.1.*">
+			- Some bug fixes and code cleanup.
+		</release>
+		<release version="1.0.7" date="2009-08-21" min="2.1.*">
+			- Fixed column sorting issues.
+			- Added more filter modes.
+		</release>
+		<release version="1.0.6" date="2009-04-23" min="2.1.*">
+			- Added a search: filter method to allow you to use boolean type searching.
+		</release>
+		<release version="1.0.6" date="2009-03-30" min="2.1.*">
+			- Fixed a number of possible encoding issues.
+		</release>
+	</releases>
+</extension>
