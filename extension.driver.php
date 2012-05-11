@@ -7,22 +7,6 @@
 
 		protected static $fields = array();
 
-		public function about() {
-			return array(
-				'name'			=> 'Field: Reflection',
-				'version'		=> '1.2',
-				'release-date'	=> '2011-07-26',
-				'author'		=> array(
-					'name'			=> 'Rowan Lewis',
-					'website'		=> 'http://nbsp.io/',
-					'email'			=> 'me@nbsp.io'
-				),
-				'description' => '
-					Create a new value from the current entry using XPath.
-				'
-			);
-		}
-
 		public function uninstall() {
 			Symphony::Database()->query("DROP TABLE `tbl_fields_reflection`");
 		}
