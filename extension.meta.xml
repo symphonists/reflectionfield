@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <extension id="reflectionfield" status="released" xmlns="http://symphony-cms.com/schemas/extension/1.0">
 	<name>Reflection Field</name>
-	<description>A field to reflect its entry</description>
+	<description>Populate this field's value using values from other fields in the same entry. Uses XPath and optionally XSLT.</description>
 	<repo type="github">https://github.com/symphonists/reflectionfield</repo>
 	<url type="discuss">http://symphony-cms.com/discuss/thread/809/</url>
 	<types>
