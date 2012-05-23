@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension id="reflectionfield" status="released" xmlns="http://symphony-cms.com/schemas/extension/1.0">
+	<name>Reflection Field</name>
+	<description>A field to reflect its entry</description>
+	<repo type="github">https://github.com/symphonists/reflectionfield</repo>
+	<url type="discuss">http://symphony-cms.com/discuss/thread/809/</url>
+	<types>
+		<type>Field Types</type>
+	</types>
+	<authors>
+		<author>
+			<name github="symphonists" symphony="community">Symphony Community</name>
+		</author>
+		<author>
+			<name github="rowan-lewis" symphony="buzzomatic">Rowan Lewis</name>
+			<website>http://nbsp.io/</website>
+		</author>
+	</authors>
+	<releases>
+		<release version="1.0.11" date="2011-04-11" min="2.2" />
+	</releases>
+</extension>
