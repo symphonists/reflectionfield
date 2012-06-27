@@ -95,7 +95,7 @@
 			$options = array();
 			$options[] = array('', empty($xsltfile), __('Disabled'));
 
-			foreach ($utilities as $utility) {
+			if (is_array($utilities)) foreach ($utilities as $utility) {
 				$options[] = array($utility, ($xsltfile == $utility), $utility);
 			}
 
