@@ -24,7 +24,7 @@
 					`fetch_associated_counts` ENUM('yes','no') DEFAULT 'no',
 					PRIMARY KEY (`id`),
 					KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 			");
 
 			return true;
@@ -69,10 +69,9 @@
 	-------------------------------------------------------------------------*/
 
 		public function getXPath($entry, $XSLTfilename = NULL, $fetch_associated_counts = NULL) {
-			$fieldManager = new FieldManager(Symphony::Engine());
 			$entry_xml = new XMLElement('entry');
-			$section_id = $entry->get('section_id');
-			$data = $entry->getData(); $fields = array();
+			$data = $entry->getData();
+			$fields = array();
 
 			$entry_xml->setAttribute('id', $entry->get('id'));
 
@@ -81,18 +80,11 @@
 				$associated = $entry->fetchAllAssociatedEntryCounts();
 
 				if (is_array($associated) and !empty($associated)) {
-					foreach ($associated as $section => $count) {
-						$handle = Symphony::Database()->fetchVar('handle', 0, "
-							SELECT
-								s.handle
-							FROM
-								`tbl_sections` AS s
-							WHERE
-								s.id = '{$section}'
-							LIMIT 1
-						");
+					foreach ($associated as $section_id => $count) {
+						$section = SectionManager::fetch($section_id);
 
-						$entry_xml->setAttribute($handle, (string)$count);
+						if(($section instanceof Section) === false) continue;
+						$entry_xml->setAttribute($section->get('handle'), (string)$count);
 					}
 				}
 			}
@@ -101,20 +93,18 @@
 			foreach ($data as $field_id => $values) {
 				if (empty($field_id)) continue;
 
-				$field = $fieldManager->fetch($field_id);
-				$field->appendFormattedElement($entry_xml, $values, false, null);
+				$field = FieldManager::fetch($field_id);
+				$field->appendFormattedElement($entry_xml, $values, false, null, $entry->get('id'));
 			}
 
 			$xml = new XMLElement('data');
 			$xml->appendChild($entry_xml);
 
 			// Build some context
+			$section = SectionManager::fetch($entry->get('section_id'));
 			$params = new XMLElement('params');
-			$section_handle = Symphony::Database()->fetchVar('handle', 0, sprintf('
-				SELECT `handle` FROM tbl_sections WHERE id = %d
-			', $section_id));
 			$params->appendChild(
-				new XMLElement('section-handle', $section_handle)
+				new XMLElement('section-handle', $section->get('handle'))
 			);
 			$params->appendChild(
 				new XMLElement('entry-id', $entry->get('id'))
@@ -137,7 +127,7 @@
 
 					// Set some context
 					$XSLProc->setParameter('', array(
-						'section-handle' => $section_handle,
+						'section-handle' => $section->get('handle'),
 						'entry-id' => $entry->get('id')
 					));
 
@@ -178,5 +168,3 @@
 			}
 		}
 	}
-
-?>

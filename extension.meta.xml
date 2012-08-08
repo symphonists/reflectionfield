@@ -1,20 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <extension id="reflectionfield" xmlns="http://symphony-cms.com/schemas/extension/1.0">
-	<name>Reflection</name>
+	<name>Reflection Field</name>
 	<description>Create a new value from the current entry using XPath.</description>
-	<repo type="github">https://github.com/rowan-lewis/reflectionfield</repo>
+	<repo type="github">https://github.com/symphonists/reflectionfield</repo>
 	<url type="discuss">http://symphony-cms.com/discuss/thread/809/</url>
 	<types>
 		<type>Field Types</type>
 	</types>
 	<authors>
 		<author>
+			<name github="symphonists" symphony="symphonists">Symphonists</name>
+		</author>
+		<author>
 			<name github="rowan-lewis" symphony="buzzomatic">Rowan Lewis</name>
 			<website>http://nbsp.io</website>
 		</author>
 	</authors>
 	<releases>
-		<release version="1.2" date="2011-07-26" min="2.2"/>
+		<release version="1.3" date="2012-08-08" min="2.3">
+			- Made compatible with Symphony 2.3
+		</release>
+		<release version="1.2" date="2011-07-26" min="2.2" max="2.3"/>
 		<release version="1.0.11" date="2011-04-11" min="2.2">
 			- Force tables to be created with the MyISAM table engine.
 		</release>

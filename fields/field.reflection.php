@@ -35,7 +35,7 @@
 					KEY `entry_id` (`entry_id`),
 					FULLTEXT KEY `value` (`value`),
 					FULLTEXT KEY `value_formatted` (`value_formatted`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 			");
 		}
 
@@ -73,7 +73,7 @@
 		---------------------------------------------------------------------*/
 
 			$group = new XMLElement('div');
-			$group->setAttribute('class', 'group');
+			$group->setAttribute('class', 'two columns');
 
 			$group->appendChild($this->buildFormatterSelect(
 				$this->get('formatter'),
@@ -85,8 +85,8 @@
 			XSLT
 		---------------------------------------------------------------------*/
 
-			$div = new XMLElement('div');
 			$label = Widget::Label('XSLT Utility');
+			$label->setAttribute('class', 'column');
 
 			$utilities = General::listStructure(UTILITIES, array('xsl'), false, 'asc', UTILITIES);
 			$utilities = $utilities['filelist'];
@@ -106,21 +106,19 @@
 
 			$help = new XMLElement('p');
 			$help->setAttribute('class', 'help');
-
+			$help->setAttribute('style', 'margin-bottom:0');
 			$help->setValue(__('XSLT will be applied to <code>entry</code> XML before <code>Expression</code> is evaluated.'));
 
-			$div->appendChild($label);
-			$div->appendChild($help);
-			$group->appendChild($div);
+			$label->appendChild($help);
+			$group->appendChild($label);
 			$wrapper->appendChild($group);
 
 		/*---------------------------------------------------------------------
 			Expression
 		---------------------------------------------------------------------*/
 
-			$div = new XMLElement('div');
 			$label = Widget::Label('Expression');
-
+			$label->setAttribute('class', 'column');
 			$label->appendChild(Widget::Input(
 				"fields[{$order}][expression]",
 				$this->get('expression')
@@ -133,18 +131,18 @@
 				To access the other fields, use XPath: <code>{entry/field-one} static text {entry/field-two}</code>.
 			'));
 
-			$div->appendChild($label);
-			$div->appendChild($help);
-			$wrapper->appendChild($div);
+			$label->appendChild($help);
+			$wrapper->appendChild($label);
 
 		/*---------------------------------------------------------------------
 			Fetch Associated Entry Counts
 		---------------------------------------------------------------------*/
 
 			$compact = new XMLElement('div');
-			$compact->setAttribute('class', 'compact');
+			$compact->setAttribute('class', 'two columns');
 
 			$label = Widget::Label();
+			$label->setAttribute('class', 'column');
 			$input = Widget::Input("fields[{$order}][fetch_associated_counts]", 'yes', 'checkbox');
 
 			if ($this->get('fetch_associated_counts') == 'yes') {
@@ -175,6 +173,7 @@
 		---------------------------------------------------------------------*/
 
 			$label = Widget::Label();
+			$label->setAttribute('class', 'column');
 			$input = Widget::Input("fields[{$order}][hide]", 'yes', 'checkbox');
 
 			if ($this->get('hide') == 'yes') {
@@ -185,7 +184,6 @@
 			$compact->appendChild($label);
 
 			$this->appendShowColumnCheckbox($compact);
-
 			$wrapper->appendChild($compact);
 		}
 
@@ -207,22 +205,14 @@
 				'hide'				=> $this->get('hide')
 			);
 
-			Symphony::Database()->query("
-				DELETE FROM
-					`tbl_fields_{$handle}`
-				WHERE
-					`field_id` = '{$id}'
-				LIMIT 1
-			");
-
-			return Symphony::Database()->insert($fields, "tbl_fields_{$handle}");
+			return FieldManager::saveSettings($id, $fields);
 		}
 
 	/*-------------------------------------------------------------------------
 		Publish:
 	-------------------------------------------------------------------------*/
 
-		public function displayPublishPanel(&$wrapper, $data = null, $flagWithError = null, $prefix = null, $postfix = null) {
+		public function displayPublishPanel(XMLElement &$wrapper, $data = null, $flagWithError = null, $fieldnamePrefix = null, $fieldnamePostfix = null, $entry_id = null) {
 			$sortorder = $this->get('sortorder');
 			$element_name = $this->get('element_name');
 			$allow_override = null;
@@ -240,12 +230,13 @@
 				$label = Widget::Label($this->get('label'));
 				$label->appendChild(
 					Widget::Input(
-						"fields{$prefix}[$element_name]{$postfix}",
+						"fields{$fieldnamePrefix}[$element_name]{$fieldnamePostfix}",
 						$value, 'text', $allow_override
 					)
 				);
 				$wrapper->appendChild($label);
-			} else {
+			}
+			else {
 				$wrapper->addClass('irrelevant');
 			}
 		}
@@ -275,7 +266,7 @@
 		Output:
 	-------------------------------------------------------------------------*/
 
-		public function appendFormattedElement(&$wrapper, $data, $encode = false) {
+		public function appendFormattedElement(XMLElement &$wrapper, $data, $encode = false, $mode = null, $entry_id = null) {
 			if (self::$compiling == $this->get('id')) return;
 
 			$element = new XMLElement($this->get('element_name'));
@@ -290,7 +281,7 @@
 
 			return parent::prepareTableValue(
 				array(
-					'value'		=> $data['value_formatted']
+					'value' => $data['value_formatted']
 				), $link
 			);
 		}
@@ -301,9 +292,7 @@
 
 		public function applyFormatting($data) {
 			if ($this->get('formatter') != 'none') {
-				$tfm = new TextformatterManager(Symphony::Engine());
-
-				$formatter = $tfm->create($this->get('formatter'));
+				$formatter = TextformatterManager::create($this->get('formatter'));
 				$formatted = $formatter->run($data);
 
 			 	return preg_replace('/&(?![a-z]{0,4}\w{2,3};|#[x0-9a-f]{2,6};)/i', '&amp;', $formatted);
@@ -373,31 +362,11 @@
 		Filtering:
 	-------------------------------------------------------------------------*/
 
-		public function buildDSRetrivalSQL($data, &$joins, &$where, $andOperation = false) {
+		public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation=false) {
 			$field_id = $this->get('id');
 
 			if (self::isFilterRegex($data[0])) {
-				$this->_key++;
-
-				if (preg_match('/^regexp:/i', $data[0])) {
-					$pattern = preg_replace('/regexp:/i', null, $this->cleanValue($data[0]));
-					$regex = 'REGEXP';
-				} else {
-					$pattern = preg_replace('/not-?regexp:/i', null, $this->cleanValue($data[0]));
-					$regex = 'NOT REGEXP';
-				}
-
-				$joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
-				";
-				$where .= "
-					AND (
-						t{$field_id}_{$this->_key}.handle {$regex} '{$pattern}'
-						OR t{$field_id}_{$this->_key}.value {$regex} '{$pattern}'
-					)
-				";
+				$this->buildRegexSQL($data[0], array('value', 'handle'), $joins, $where);
 			}
 
 			else if (preg_match('/^(not-)?(boolean|search):\s*/', $data[0], $matches)) {
@@ -549,11 +518,22 @@
 		Sorting:
 	-------------------------------------------------------------------------*/
 
-		public function buildSortingSQL(&$joins, &$where, &$sort, $order = 'ASC') {
-			$field_id = $this->get('id');
-
-			$joins .= "LEFT OUTER JOIN `tbl_entries_data_{$field_id}` AS ed ON (e.id = ed.entry_id) ";
-			$sort = 'ORDER BY ' . (strtolower($order) == 'random' ? 'RAND()' : "ed.value {$order}");
+		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
+			if(in_array(strtolower($order), array('random', 'rand'))) {
+				$sort = 'ORDER BY RAND()';
+			}
+			else {
+				$sort = sprintf(
+					'ORDER BY (
+						SELECT %s
+						FROM tbl_entries_data_%d AS `ed`
+						WHERE entry_id = e.id
+					) %s',
+					'`ed`.value',
+					$this->get('id'),
+					$order
+				);
+			}
 		}
 
 	/*-------------------------------------------------------------------------
@@ -563,22 +543,21 @@
 		public function groupRecords($records) {
 			if (!is_array($records) or empty($records)) return;
 
+			$element = $this->get('element_name');
+
 			$groups = array(
-				$this->get('element_name') => array()
+				$element => array()
 			);
 
 			foreach ($records as $record) {
 				$data = $record->getData($this->get('id'));
-
-				$value = $data['value_formatted'];
 				$handle = $data['handle'];
-				$element = $this->get('element_name');
 
 				if (!isset($groups[$element][$handle])) {
 					$groups[$element][$handle] = array(
 						'attr'		=> array(
 							'handle'	=> $handle,
-							'value'		=> $value
+							'value'		=> $data['value_formatted']
 						),
 						'records'	=> array(),
 						'groups'	=> array()
@@ -591,5 +570,3 @@
 			return $groups;
 		}
 	}
-
-?>
