@@ -17,6 +17,32 @@
 		</author>
 	</authors>
 	<releases>
-		<release version="1.0.11" date="2011-04-11" min="2.2" />
+		<release version="1.3" date="2012-08-08" min="2.3">
+			- Made compatible with Symphony 2.3
+		</release>
+		<release version="1.2" date="2011-07-26" min="2.2" max="2.3" />
+		<release version="1.0.11" date="2011-04-11" min="2.2">
+			- Force tables to be created with the MyISAM table engine.
+		</release>
+		<release version="1.0.10" date="2011-03-04" min="2.2">
+			- Fixed a sanitisation issue on publish pages.
+			- Made compatible with Symphony 2.2.
+		</release>
+		<release version="1.0.9" date="2010-11-01" min="2.1.*">
+			- Bug with usage of appendFormattedElement fixed by michael-e.
+		</release>
+		<release version="1.0.8" date="2009-12-09" min="2.1.*">
+			- Some bug fixes and code cleanup.
+		</release>
+		<release version="1.0.7" date="2009-08-21" min="2.1.*">
+			- Fixed column sorting issues.
+			- Added more filter modes.
+		</release>
+		<release version="1.0.6" date="2009-04-23" min="2.1.*">
+			- Added a search: filter method to allow you to use boolean type searching.
+		</release>
+		<release version="1.0.6" date="2009-03-30" min="2.1.*">
+			- Fixed a number of possible encoding issues.
+		</release>
 	</releases>
 </extension>
