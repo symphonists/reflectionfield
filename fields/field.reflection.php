@@ -89,7 +89,8 @@
 			$label->setAttribute('class', 'column');
 
 			$utilities = General::listStructure(UTILITIES, array('xsl'), false, 'asc', UTILITIES);
-			$utilities = $utilities['filelist'];
+			$utilities = ($utilities['filelist']) ? $utilities['filelist'] : array();
+
 
 			$xsltfile = $this->get('xsltfile');
 			$options = array();
