@@ -157,6 +157,10 @@
 		}
 
 		public function compileBackendFields($context) {
+			if ( empty(self::$fields) ) {
+				self::$fields = $context['section']->fetchFields('reflection');
+			}
+
 			foreach (self::$fields as $field) {
 				$field->compile($context['entry']);
 			}
