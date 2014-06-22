@@ -1,8 +1,9 @@
 <?php
 
 	if (!defined('__IN_SYMPHONY__')) die('<h2>Symphony Error</h2><p>You cannot directly access this file</p>');
+	require_once FACE . '/interface.exportablefield.php';
 
-	class FieldReflection extends Field {
+	class FieldReflection extends Field implements ExportableField {
 		protected static $compiling = 0;
 
 	/*-------------------------------------------------------------------------
@@ -96,7 +97,7 @@
 			$options = array();
 			$options[] = array('', empty($xsltfile), __('Disabled'));
 
-			foreach ($utilities as $utility) {
+			if(is_array($utilities)) foreach ($utilities as $utility) {
 				$options[] = array($utility, ($xsltfile == $utility), $utility);
 			}
 
@@ -286,6 +287,44 @@
 				), $link
 			);
 		}
+    /*-------------------------------------------------------------------------
+        Export:
+    -------------------------------------------------------------------------*/
+
+    /**
+     * Return a list of supported export modes for use with `prepareExportValue`.
+     *
+     * @return array
+     */
+    public function getExportModes()
+    {
+        return array(
+            'getValue' =>     ExportableField::VALUE,
+            'getFormatted' => ExportableField::FORMATTED
+        );
+    }
+
+    /**
+     * Give the field some data and ask it to return a value using one of many
+     * possible modes.
+     *
+     * @param mixed $data
+     * @param integer $mode
+     * @param integer $entry_id
+     * @return string|null
+     */
+    public function prepareExportValue($data, $mode, $entry_id = null)
+    {
+        $modes = (object)$this->getExportModes();
+
+        if ($mode === $modes->getValue) {
+        	return $data['value'];
+        } elseif($mode === $modes->getFORMATTED) {
+        	return $data['value_formatted'];
+        }
+
+        return null;
+    }
 
 	/*-------------------------------------------------------------------------
 		Compile:
