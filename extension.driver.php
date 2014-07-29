@@ -74,6 +74,29 @@
 			$fields = array();
 
 			$entry_xml->setAttribute('id', $entry->get('id'));
+			
+			//Add date created and edited values
+			$date = new XMLElement('system-date');
+
+			$date->appendChild(
+				General::createXMLDateObject(
+				DateTimeObj::get('U', $entry->get('creation_date')),
+				'created'
+				)
+			);
+
+			$date->appendChild(
+				General::createXMLDateObject(
+				DateTimeObj::get('U', $entry->get('modification_date')),
+				'modified'
+				)
+			);
+
+			$entry_xml->appendChild($date);
+
+			//Reflect Workspace and Siteroot params
+			$workspace = new XMLElement('workspace', URL .'/workspace');
+			$root = new XMLElement('root', URL);
 
 			// Add associated entry counts
 			if($fetch_associated_counts == 'yes') {
@@ -99,6 +122,8 @@
 
 			$xml = new XMLElement('data');
 			$xml->appendChild($entry_xml);
+			$xml->appendChild($workspace);
+			$xml->appendChild($root);
 
 			// Build some context
 			$section = SectionManager::fetch($entry->get('section_id'));
