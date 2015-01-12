@@ -18,7 +18,8 @@
 	</authors>
 	<releases>
 		<release version="1.4.1" date="2015-01-12" min="2.3">
-			- Add XML Importer Support
+			- Added XML Importer Support
+			- Added system date to generated entry XML
 		</release>
 		<release version="1.4.0" date="2013-06-22" min="2.3">
 			- Added export modes
