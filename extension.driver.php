@@ -187,8 +187,8 @@
 		Fields:
 	-------------------------------------------------------------------------*/
 
-		public function registerField($field) {
-			self::$fields[] = $field;
+		public function registerField(Field $field) {
+			self::$fields[$field->get('id')] = $field;
 		}
 
 		public function compileBackendFields($context) {
