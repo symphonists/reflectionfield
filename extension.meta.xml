@@ -17,6 +17,10 @@
 		</author>
 	</authors>
 	<releases>
+		<release version="1.4.2" date="2016-01-29" min="2.3" max="2.6.x">
+			- Prevent the same field from being registered multiple times
+			- Added XML Importer Instructions
+		</release>
 		<release version="1.4.1" date="2015-01-12" min="2.3">
 			- Added XML Importer Support
 			- Added system date to generated entry XML
