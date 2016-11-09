@@ -1,31 +1,36 @@
 <?php
 
-	if (!defined('__IN_SYMPHONY__')) die('<h2>Symphony Error</h2><p>You cannot directly access this file</p>');
-	require_once FACE . '/interface.exportablefield.php';
+    if (!defined('__IN_SYMPHONY__')) {
+        die('<h2>Symphony Error</h2><p>You cannot directly access this file</p>');
+    }
+    require_once FACE.'/interface.exportablefield.php';
 
-	class FieldReflection extends Field implements ExportableField {
-		protected static $compiling = 0;
+    class FieldReflection extends Field implements ExportableField
+    {
+        protected static $compiling = 0;
 
-	/*-------------------------------------------------------------------------
-		Definition:
-	-------------------------------------------------------------------------*/
+    /*-------------------------------------------------------------------------
+        Definition:
+    -------------------------------------------------------------------------*/
 
-		public function __construct() {
-			parent::__construct();
+        public function __construct()
+        {
+            parent::__construct();
 
-			$this->_name = __('Reflection');
+            $this->_name = __('Reflection');
 
-			// Set defaults:
-			$this->set('show_column', 'yes');
-			$this->set('allow_override', 'no');
-			$this->set('fetch_associated_counts', 'no');
-			$this->set('hide', 'no');
-		}
+            // Set defaults:
+            $this->set('show_column', 'yes');
+            $this->set('allow_override', 'no');
+            $this->set('fetch_associated_counts', 'no');
+            $this->set('hide', 'no');
+        }
 
-		public function createTable() {
-			$field_id = $this->get('id');
+        public function createTable()
+        {
+            $field_id = $this->get('id');
 
-			return Symphony::Database()->query("
+            return Symphony::Database()->query("
 				CREATE TABLE IF NOT EXISTS `tbl_entries_data_{$field_id}` (
 					`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 					`entry_id` INT(11) UNSIGNED NOT NULL,
@@ -38,255 +43,275 @@
 					FULLTEXT KEY `value_formatted` (`value_formatted`)
 				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 			");
-		}
+        }
 
-		public function allowDatasourceOutputGrouping() {
-			return true;
-		}
+        public function allowDatasourceOutputGrouping()
+        {
+            return true;
+        }
 
-		public function allowDatasourceParamOutput() {
-			return true;
-		}
+        public function allowDatasourceParamOutput()
+        {
+            return true;
+        }
 
-		public function canFilter() {
-			return true;
-		}
+        public function canFilter()
+        {
+            return true;
+        }
 
-		public function canPrePopulate() {
-			return true;
-		}
+        public function canPrePopulate()
+        {
+            return true;
+        }
 
-		public function isSortable() {
-			return true;
-		}
+        public function isSortable()
+        {
+            return true;
+        }
 
-	/*-------------------------------------------------------------------------
-		Settings:
-	-------------------------------------------------------------------------*/
+    /*-------------------------------------------------------------------------
+        Settings:
+    -------------------------------------------------------------------------*/
 
-		public function displaySettingsPanel(&$wrapper, $errors = null) {
-			parent::displaySettingsPanel($wrapper, $errors);
+        public function displaySettingsPanel(&$wrapper, $errors = null)
+        {
+            parent::displaySettingsPanel($wrapper, $errors);
 
-			$order = $this->get('sortorder');
+            $order = $this->get('sortorder');
 
-		/*---------------------------------------------------------------------
-			Text Formatter
-		---------------------------------------------------------------------*/
+        /*---------------------------------------------------------------------
+            Text Formatter
+        ---------------------------------------------------------------------*/
 
-			$group = new XMLElement('div');
-			$group->setAttribute('class', 'two columns');
+            $group = new XMLElement('div');
+            $group->setAttribute('class', 'two columns');
 
-			$group->appendChild($this->buildFormatterSelect(
-				$this->get('formatter'),
-				"fields[{$order}][formatter]",
-				__('Text Formatter')
-			));
+            $group->appendChild($this->buildFormatterSelect(
+                $this->get('formatter'),
+                "fields[{$order}][formatter]",
+                __('Text Formatter')
+            ));
 
-		/*---------------------------------------------------------------------
-			XSLT
-		---------------------------------------------------------------------*/
+        /*---------------------------------------------------------------------
+            XSLT
+        ---------------------------------------------------------------------*/
 
-			$label = Widget::Label('XSLT Utility');
-			$label->setAttribute('class', 'column');
+            $label = Widget::Label('XSLT Utility');
+            $label->setAttribute('class', 'column');
 
-			$utilities = General::listStructure(UTILITIES, array('xsl'), false, 'asc', UTILITIES);
-			$utilities = ($utilities['filelist']) ? $utilities['filelist'] : array();
+            $utilities = General::listStructure(UTILITIES, array('xsl'), false, 'asc', UTILITIES);
+            $utilities = ($utilities['filelist']) ? $utilities['filelist'] : array();
 
+            $xsltfile = $this->get('xsltfile');
+            $options = array();
+            $options[] = array('', empty($xsltfile), __('Disabled'));
 
-			$xsltfile = $this->get('xsltfile');
-			$options = array();
-			$options[] = array('', empty($xsltfile), __('Disabled'));
+            if (is_array($utilities)) {
+                foreach ($utilities as $utility) {
+                    $options[] = array($utility, ($xsltfile == $utility), $utility);
+                }
+            }
 
-			if(is_array($utilities)) foreach ($utilities as $utility) {
-				$options[] = array($utility, ($xsltfile == $utility), $utility);
-			}
+            $label->appendChild(Widget::Select(
+                "fields[{$order}][xsltfile]",
+                $options
+            ));
 
-			$label->appendChild(Widget::Select(
-				"fields[{$order}][xsltfile]",
-				$options
-			));
+            $help = new XMLElement('p');
+            $help->setAttribute('class', 'help');
+            $help->setAttribute('style', 'margin-bottom:0');
+            $help->setValue(__('XSLT will be applied to <code>entry</code> XML before <code>Expression</code> is evaluated.'));
 
-			$help = new XMLElement('p');
-			$help->setAttribute('class', 'help');
-			$help->setAttribute('style', 'margin-bottom:0');
-			$help->setValue(__('XSLT will be applied to <code>entry</code> XML before <code>Expression</code> is evaluated.'));
+            $label->appendChild($help);
+            $group->appendChild($label);
+            $wrapper->appendChild($group);
 
-			$label->appendChild($help);
-			$group->appendChild($label);
-			$wrapper->appendChild($group);
+        /*---------------------------------------------------------------------
+            Expression
+        ---------------------------------------------------------------------*/
 
-		/*---------------------------------------------------------------------
-			Expression
-		---------------------------------------------------------------------*/
+            $label = Widget::Label('Expression');
+            $label->setAttribute('class', 'column');
+            $label->appendChild(Widget::Input(
+                "fields[{$order}][expression]",
+                $this->get('expression')
+            ));
 
-			$label = Widget::Label('Expression');
-			$label->setAttribute('class', 'column');
-			$label->appendChild(Widget::Input(
-				"fields[{$order}][expression]",
-				$this->get('expression')
-			));
+            $help = new XMLElement('p');
+            $help->setAttribute('class', 'help');
 
-			$help = new XMLElement('p');
-			$help->setAttribute('class', 'help');
-
-			$help->setValue(__('
+            $help->setValue(__('
 				To access the other fields, use XPath: <code>{entry/field-one} static text {entry/field-two}</code>.
 			'));
 
-			$label->appendChild($help);
-			$wrapper->appendChild($label);
+            $label->appendChild($help);
+            $wrapper->appendChild($label);
 
-		/*---------------------------------------------------------------------
-			Fetch Associated Entry Counts
-		---------------------------------------------------------------------*/
+        /*---------------------------------------------------------------------
+            Fetch Associated Entry Counts
+        ---------------------------------------------------------------------*/
 
-			$compact = new XMLElement('div');
-			$compact->setAttribute('class', 'two columns');
+            $compact = new XMLElement('div');
+            $compact->setAttribute('class', 'two columns');
 
-			$label = Widget::Label();
-			$label->setAttribute('class', 'column');
-			$input = Widget::Input("fields[{$order}][fetch_associated_counts]", 'yes', 'checkbox');
+            $label = Widget::Label();
+            $label->setAttribute('class', 'column');
+            $input = Widget::Input("fields[{$order}][fetch_associated_counts]", 'yes', 'checkbox');
 
-			if ($this->get('fetch_associated_counts') == 'yes') {
-				$input->setAttribute('checked', 'checked');
-			}
+            if ($this->get('fetch_associated_counts') == 'yes') {
+                $input->setAttribute('checked', 'checked');
+            }
 
-			$label->setValue($input->generate() . ' ' . __('Fetch associated entry counts for XPath'));
-			$compact->appendChild($label);
+            $label->setValue($input->generate().' '.__('Fetch associated entry counts for XPath'));
+            $compact->appendChild($label);
 
-		/*---------------------------------------------------------------------
-			Allow Override
-		---------------------------------------------------------------------*/
+        /*---------------------------------------------------------------------
+            Allow Override
+        ---------------------------------------------------------------------*/
 
-			/*
-			$label = Widget::Label();
-			$input = Widget::Input("fields[{$order}][allow_override]", 'yes', 'checkbox');
+            /*
+            $label = Widget::Label();
+            $input = Widget::Input("fields[{$order}][allow_override]", 'yes', 'checkbox');
 
-			if ($this->get('allow_override') == 'yes') {
-				$input->setAttribute('checked', 'checked');
-			}
+            if ($this->get('allow_override') == 'yes') {
+                $input->setAttribute('checked', 'checked');
+            }
 
-			$label->setValue($input->generate() . ' Allow value to be manually overridden');
-			$wrapper->appendChild($label);
-			*/
+            $label->setValue($input->generate() . ' Allow value to be manually overridden');
+            $wrapper->appendChild($label);
+            */
 
-		/*---------------------------------------------------------------------
-			Hide input
-		---------------------------------------------------------------------*/
+        /*---------------------------------------------------------------------
+            Hide input
+        ---------------------------------------------------------------------*/
 
-			$label = Widget::Label();
-			$label->setAttribute('class', 'column');
-			$input = Widget::Input("fields[{$order}][hide]", 'yes', 'checkbox');
+            $label = Widget::Label();
+            $label->setAttribute('class', 'column');
+            $input = Widget::Input("fields[{$order}][hide]", 'yes', 'checkbox');
 
-			if ($this->get('hide') == 'yes') {
-				$input->setAttribute('checked', 'checked');
-			}
+            if ($this->get('hide') == 'yes') {
+                $input->setAttribute('checked', 'checked');
+            }
 
-			$label->setValue($input->generate() . ' ' . __('Hide this field on publish page'));
-			$compact->appendChild($label);
+            $label->setValue($input->generate().' '.__('Hide this field on publish page'));
+            $compact->appendChild($label);
 
-			$this->appendShowColumnCheckbox($compact);
-			$wrapper->appendChild($compact);
-		}
+            $this->appendShowColumnCheckbox($compact);
+            $wrapper->appendChild($compact);
+        }
 
-		public function commit() {
-			if (!parent::commit()) return false;
+        public function commit()
+        {
+            if (!parent::commit()) {
+                return false;
+            }
 
-			$id = $this->get('id');
-			$handle = $this->handle();
+            $id = $this->get('id');
+            $handle = $this->handle();
 
-			if ($id === false) return false;
+            if ($id === false) {
+                return false;
+            }
 
-			$fields = array(
-				'field_id'			=> $id,
-				'xsltfile'			=> $this->get('xsltfile'),
-				'expression'		=> $this->get('expression'),
-				'formatter'			=> $this->get('formatter'),
-				'override'			=> $this->get('override'),
-				'fetch_associated_counts' => $this->get('fetch_associated_counts'),
-				'hide'				=> $this->get('hide')
-			);
+            $fields = array(
+                'field_id' => $id,
+                'xsltfile' => $this->get('xsltfile'),
+                'expression' => $this->get('expression'),
+                'formatter' => $this->get('formatter'),
+                'override' => $this->get('override'),
+                'fetch_associated_counts' => $this->get('fetch_associated_counts'),
+                'hide' => $this->get('hide'),
+            );
 
-			return FieldManager::saveSettings($id, $fields);
-		}
+            return FieldManager::saveSettings($id, $fields);
+        }
 
-	/*-------------------------------------------------------------------------
-		Publish:
-	-------------------------------------------------------------------------*/
+    /*-------------------------------------------------------------------------
+        Publish:
+    -------------------------------------------------------------------------*/
 
-		public function displayPublishPanel(XMLElement &$wrapper, $data = null, $flagWithError = null, $fieldnamePrefix = null, $fieldnamePostfix = null, $entry_id = null) {
-			$sortorder = $this->get('sortorder');
-			$element_name = $this->get('element_name');
-			$allow_override = null;
+        public function displayPublishPanel(XMLElement &$wrapper, $data = null, $flagWithError = null, $fieldnamePrefix = null, $fieldnamePostfix = null, $entry_id = null)
+        {
+            $sortorder = $this->get('sortorder');
+            $element_name = $this->get('element_name');
+            $allow_override = null;
 
-			if ($this->get('override') != 'yes') {
-				$allow_override = array(
-					'disabled'	=> 'disabled'
-				);
-			}
+            if ($this->get('override') != 'yes') {
+                $allow_override = array(
+                    'disabled' => 'disabled',
+                );
+            }
 
-			if ($this->get('hide') != 'yes') {
-				$value = isset($data['value_formatted'])
-					? $data['value_formatted']
-					: null;
-				$label = Widget::Label($this->get('label'));
-				$label->appendChild(
-					Widget::Input(
-						"fields{$fieldnamePrefix}[$element_name]{$fieldnamePostfix}",
-						$value, 'text', $allow_override
-					)
-				);
-				$wrapper->appendChild($label);
-			}
-			else {
-				$wrapper->addClass('irrelevant');
-			}
-		}
+            if ($this->get('hide') != 'yes') {
+                $value = isset($data['value_formatted'])
+                    ? $data['value_formatted']
+                    : null;
+                $label = Widget::Label($this->get('label'));
+                $label->appendChild(
+                    Widget::Input(
+                        "fields{$fieldnamePrefix}[$element_name]{$fieldnamePostfix}",
+                        $value, 'text', $allow_override
+                    )
+                );
+                $wrapper->appendChild($label);
+            } else {
+                $wrapper->addClass('irrelevant');
+            }
+        }
 
-	/*-------------------------------------------------------------------------
-		Input:
-	-------------------------------------------------------------------------*/
+    /*-------------------------------------------------------------------------
+        Input:
+    -------------------------------------------------------------------------*/
 
-		public function checkPostFieldData($data, &$message, $entry_id = null) {
-			$driver = Symphony::ExtensionManager()->create('reflectionfield');
-			$driver->registerField($this);
+        public function checkPostFieldData($data, &$message, $entry_id = null)
+        {
+            $driver = Symphony::ExtensionManager()->create('reflectionfield');
+            $driver->registerField($this);
 
-			return self::__OK__;
-		}
+            return self::__OK__;
+        }
 
-		public function processRawFieldData($data, &$status, $simulate = false, $entry_id = null) {
-			$status = self::__OK__;
+        public function processRawFieldData($data, &$status, $simulate = false, $entry_id = null)
+        {
+            $status = self::__OK__;
 
-			return array(
-				'handle'			=> null,
-				'value'				=> null,
-				'value_formatted'	=> null
-			);
-		}
+            return array(
+                'handle' => null,
+                'value' => null,
+                'value_formatted' => null,
+            );
+        }
 
-	/*-------------------------------------------------------------------------
-		Output:
-	-------------------------------------------------------------------------*/
+    /*-------------------------------------------------------------------------
+        Output:
+    -------------------------------------------------------------------------*/
 
-		public function appendFormattedElement(XMLElement &$wrapper, $data, $encode = false, $mode = null, $entry_id = null) {
-			if (self::$compiling == $this->get('id')) return;
+        public function appendFormattedElement(XMLElement &$wrapper, $data, $encode = false, $mode = null, $entry_id = null)
+        {
+            if (self::$compiling == $this->get('id')) {
+                return;
+            }
 
-			$element = new XMLElement($this->get('element_name'));
-			$element->setAttribute('handle', $data['handle']);
-			$element->setValue($data['value_formatted']);
+            $element = new XMLElement($this->get('element_name'));
+            $element->setAttribute('handle', $data['handle']);
+            $element->setValue($data['value_formatted']);
 
-			$wrapper->appendChild($element);
-		}
+            $wrapper->appendChild($element);
+        }
 
-		public function prepareTableValue($data, XMLElement $link = null) {
-			if (empty($data)) return;
+        public function prepareTableValue($data, XMLElement $link = null)
+        {
+            if (empty($data)) {
+                return;
+            }
 
-			return parent::prepareTableValue(
-				array(
-					'value' => $data['value_formatted']
-				), $link
-			);
-		}
+            return parent::prepareTableValue(
+                array(
+                    'value' => $data['value_formatted'],
+                ), $link
+            );
+        }
     /*-------------------------------------------------------------------------
         Export:
     -------------------------------------------------------------------------*/
@@ -299,8 +324,8 @@
     public function getExportModes()
     {
         return array(
-            'getValue' =>     ExportableField::VALUE,
-            'getFormatted' => ExportableField::FORMATTED
+            'getValue' => ExportableField::VALUE,
+            'getFormatted' => ExportableField::FORMATTED,
         );
     }
 
@@ -309,304 +334,311 @@
      * possible modes.
      *
      * @param mixed $data
-     * @param integer $mode
-     * @param integer $entry_id
+     * @param int   $mode
+     * @param int   $entry_id
+     *
      * @return string|null
      */
     public function prepareExportValue($data, $mode, $entry_id = null)
     {
-        $modes = (object)$this->getExportModes();
+        $modes = (object) $this->getExportModes();
 
         if ($mode === $modes->getValue) {
-        	return $data['value'];
-        } elseif($mode === $modes->getFORMATTED) {
-        	return $data['value_formatted'];
+            return $data['value'];
+        } elseif ($mode === $modes->getFORMATTED) {
+            return $data['value_formatted'];
         }
 
-        return null;
+        return;
     }
 
-	/*-------------------------------------------------------------------------
-		Compile:
-	-------------------------------------------------------------------------*/
+    /*-------------------------------------------------------------------------
+        Compile:
+    -------------------------------------------------------------------------*/
 
-		public function applyFormatting($data) {
-			if ($this->get('formatter') != 'none') {
-				$formatter = TextformatterManager::create($this->get('formatter'));
-				$formatted = $formatter->run($data);
+        public function applyFormatting($data)
+        {
+            if ($this->get('formatter') != 'none') {
+                $formatter = TextformatterManager::create($this->get('formatter'));
+                $formatted = $formatter->run($data);
 
-			 	return preg_replace('/&(?![a-z]{0,4}\w{2,3};|#[x0-9a-f]{2,6};)/i', '&amp;', $formatted);
-			}
+                return preg_replace('/&(?![a-z]{0,4}\w{2,3};|#[x0-9a-f]{2,6};)/i', '&amp;', $formatted);
+            }
 
-			return null;
-		}
+            return;
+        }
 
-		public function compile(&$entry) {
-			self::$compiling = $this->get('id');
+        public function compile(&$entry)
+        {
+            self::$compiling = $this->get('id');
 
-			$driver = Symphony::ExtensionManager()->create('reflectionfield');
-			$xpath = $driver->getXPath($entry, $this->get('xsltfile'), $this->get('fetch_associated_counts'));
+            $driver = Symphony::ExtensionManager()->create('reflectionfield');
+            $xpath = $driver->getXPath($entry, $this->get('xsltfile'), $this->get('fetch_associated_counts'), $this->get('element_name'));
 
-			self::$compiling = 0;
+            self::$compiling = 0;
 
-			$entry_id = $entry->get('id');
-			$field_id = $this->get('id');
-			$expression = $this->get('expression');
-			$replacements = array();
+            $entry_id = $entry->get('id');
+            $field_id = $this->get('id');
+            $expression = $this->get('expression');
+            $replacements = array();
 
-			// Find queries:
-			preg_match_all('/\{[^\}]+\}/', $expression, $matches);
+            // Find queries:
+            preg_match_all('/\{[^\}]+\}/', $expression, $matches);
 
-			// Find replacements:
-			foreach ($matches[0] as $match) {
-				$result = @$xpath->evaluate('string(' . trim($match, '{}') . ')');
+            // Find replacements:
+            foreach ($matches[0] as $match) {
+                $result = $xpath->evaluate('string(//' . trim($match, '{}') . ')');
 
-				if (!is_null($result)) {
-					$replacements[$match] = trim($result);
-				}
+                if (!is_null($result)) {
+                    $replacements[$match] = trim($result);
+                } else {
+                    $replacements[$match] = '';
+                }
+            }
 
-				else {
-					$replacements[$match] = '';
-				}
-			}
+            // Apply replacements:
+            $value = str_replace(
+                array_keys($replacements),
+                array_values($replacements),
+                $expression
+            );
 
-			// Apply replacements:
-			$value = str_replace(
-				array_keys($replacements),
-				array_values($replacements),
-				$expression
-			);
+            // Apply formatting:
+            if (!$value_formatted = $this->applyFormatting($value)) {
+                $value_formatted = General::sanitize($value);
+            }
 
-			// Apply formatting:
-			if (!$value_formatted = $this->applyFormatting($value)) {
-				$value_formatted = General::sanitize($value);
-			}
+            $data = array(
+                'handle' => Lang::createHandle($value),
+                'value' => $value,
+                'value_formatted' => $value_formatted,
+            );
 
-			$data = array(
-				'handle'			=> Lang::createHandle($value),
-				'value'				=> $value,
-				'value_formatted'	=> $value_formatted
-			);
+            // Save:
+            $result = Symphony::Database()->update(
+                $data,
+                "tbl_entries_data_{$field_id}",
+                "`entry_id` = '{$entry_id}'"
+            );
 
-			// Save:
-			$result = Symphony::Database()->update(
-				$data,
-				"tbl_entries_data_{$field_id}",
-				"`entry_id` = '{$entry_id}'"
-			);
+            $entry->setData($field_id, $data);
+        }
 
-			$entry->setData($field_id, $data);
-		}
+    /*-------------------------------------------------------------------------
+        Filtering:
+    -------------------------------------------------------------------------*/
 
-	/*-------------------------------------------------------------------------
-		Filtering:
-	-------------------------------------------------------------------------*/
+        public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation = false)
+        {
+            $field_id = $this->get('id');
 
-		public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation=false) {
-			$field_id = $this->get('id');
+            if (self::isFilterRegex($data[0])) {
+                $this->buildRegexSQL($data[0], array('value', 'handle'), $joins, $where);
+            } elseif (preg_match('/^(not-)?(boolean|search):\s*/', $data[0], $matches)) {
+                $data = trim(array_pop(explode(':', implode(' + ', $data), 2)));
+                $negate = ($matches[1] == '' ? '' : 'NOT');
 
-			if (self::isFilterRegex($data[0])) {
-				$this->buildRegexSQL($data[0], array('value', 'handle'), $joins, $where);
-			}
+                if ($data == '') {
+                    return true;
+                }
 
-			else if (preg_match('/^(not-)?(boolean|search):\s*/', $data[0], $matches)) {
-				$data = trim(array_pop(explode(':', implode(' + ', $data), 2)));
-				$negate = ($matches[1] == '' ? '' : 'NOT');
+                // Negative match?
+                if (preg_match('/^not(\W)/i', $data)) {
+                    $mode = '-';
+                } else {
+                    $mode = '+';
+                }
 
-				if ($data == '') return true;
+                // Replace ' and ' with ' +':
+                $data = preg_replace('/(\W)and(\W)/i', '\\1+\\2', $data);
+                $data = preg_replace('/(^)and(\W)|(\W)and($)/i', '\\2\\3', $data);
+                $data = preg_replace('/(\W)not(\W)/i', '\\1-\\2', $data);
+                $data = preg_replace('/(^)not(\W)|(\W)not($)/i', '\\2\\3', $data);
+                $data = preg_replace('/([\+\-])\s*/', '\\1', $mode.$data);
 
-				// Negative match?
-				if (preg_match('/^not(\W)/i', $data)) {
-					$mode = '-';
-
-				} else {
-					$mode = '+';
-				}
-
-				// Replace ' and ' with ' +':
-				$data = preg_replace('/(\W)and(\W)/i', '\\1+\\2', $data);
-				$data = preg_replace('/(^)and(\W)|(\W)and($)/i', '\\2\\3', $data);
-				$data = preg_replace('/(\W)not(\W)/i', '\\1-\\2', $data);
-				$data = preg_replace('/(^)not(\W)|(\W)not($)/i', '\\2\\3', $data);
-				$data = preg_replace('/([\+\-])\s*/', '\\1', $mode . $data);
-
-				$data = $this->cleanValue($data);
-				$this->_key++;
-				$joins .= "
+                $data = $this->cleanValue($data);
+                ++$this->_key;
+                $joins .= "
 					LEFT JOIN
 						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
 						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
 				";
-				$where .= "
+                $where .= "
 					AND {$negate}(MATCH (t{$field_id}_{$this->_key}.value) AGAINST ('{$data}' IN BOOLEAN MODE))
 				";
-			}
+            } elseif (preg_match('/^(not-)?((starts|ends)-with|contains):\s*/', $data[0], $matches)) {
+                $data = trim(array_pop(explode(':', $data[0], 2)));
 
-			else if (preg_match('/^(not-)?((starts|ends)-with|contains):\s*/', $data[0], $matches)) {
-				$data = trim(array_pop(explode(':', $data[0], 2)));
+                if ($data == '') {
+                    return true;
+                }
 
-				if ($data == '') return true;
+                $negate = ($matches[1] == '' ? '' : 'NOT');
+                $data = $this->cleanValue($data);
 
-				$negate = ($matches[1] == '' ? '' : 'NOT');
-				$data = $this->cleanValue($data);
+                if ($matches[2] == 'ends-with') {
+                    $data = "%{$data}";
+                }
+                if ($matches[2] == 'starts-with') {
+                    $data = "{$data}%";
+                }
+                if ($matches[2] == 'contains') {
+                    $data = "%{$data}%";
+                }
 
-				if ($matches[2] == 'ends-with') $data = "%{$data}";
-				if ($matches[2] == 'starts-with') $data = "{$data}%";
-				if ($matches[2] == 'contains') $data = "%{$data}%";
-
-				$this->_key++;
-				$joins .= "
+                ++$this->_key;
+                $joins .= "
 					LEFT JOIN
 						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
 						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
 				";
-				$where .= "
+                $where .= "
 					AND {$negate}(
 						t{$field_id}_{$this->_key}.handle LIKE '{$data}'
 						OR t{$field_id}_{$this->_key}.value LIKE '{$data}'
 					)
 				";
-			}
+            } elseif (preg_match('/^(?:equal to or )?(?:less than|more than|equal to) -?\d+(?:\.\d+)?$/i', $data[0])) {
+                $comparisons = array();
+                foreach ($data as $string) {
+                    if (preg_match('/^(equal to or )?(less than|more than|equal to) (-?\d+(?:\.\d+)?)$/i', $string, $matches)) {
+                        $number = trim($matches[3]);
+                        if (!is_numeric($number) || $number === '') {
+                            continue;
+                        }
+                        $number = floatval($number);
 
-			else if (preg_match('/^(?:equal to or )?(?:less than|more than|equal to) -?\d+(?:\.\d+)?$/i', $data[0])) {
+                        $operator = '<';
+                        switch ($matches[2]) {
+                            case 'more than': $operator = '>'; break;
+                            case 'less than': $operator = '<'; break;
+                            case 'equal to': $operator = '='; break;
+                        }
 
-				$comparisons = array();
-				foreach ($data as $string) {
-					if (preg_match('/^(equal to or )?(less than|more than|equal to) (-?\d+(?:\.\d+)?)$/i', $string, $matches)) {
-						$number = trim($matches[3]);
-						if (!is_numeric($number) || $number === '') continue;
-						$number = floatval($number);
+                        if ($matches[1] == 'equal to or ' && $operator != '=') {
+                            $operator .= '=';
+                        }
 
-						$operator = '<';
-						switch ($matches[2]) {
-							case 'more than': $operator = '>'; break;
-							case 'less than': $operator = '<'; break;
-							case 'equal to': $operator = '='; break;
-						}
+                        $comparisons[] = "{$operator} {$number}";
+                    }
+                }
 
-						if ($matches[1] == 'equal to or ' && $operator != '=') {
-							$operator .= '=';
-						}
-
-						$comparisons[] = "{$operator} {$number}";
-					}
-				}
-
-				if (!empty($comparisons)) {
-					$this->_key++;
-					$joins .= "
+                if (!empty($comparisons)) {
+                    ++$this->_key;
+                    $joins .= "
 						LEFT JOIN
 							`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
 							ON (e.id = t{$field_id}_{$this->_key}.entry_id)
 					";
 
-					$value = " t{$field_id}_{$this->_key}.value ";
-					$comparisons = $value . implode(' '.($andOperation ? 'AND' : 'OR').$value, $comparisons);
+                    $value = " t{$field_id}_{$this->_key}.value ";
+                    $comparisons = $value.implode(' '.($andOperation ? 'AND' : 'OR').$value, $comparisons);
 
-					$where .= "
+                    $where .= "
 						AND (
 							{$comparisons}
 						)
 					";
-				}
-			}
-
-			else if ($andOperation) {
-				foreach ($data as $value) {
-					$this->_key++;
-					$value = $this->cleanValue($value);
-					$joins .= "
+                }
+            } elseif ($andOperation) {
+                foreach ($data as $value) {
+                    ++$this->_key;
+                    $value = $this->cleanValue($value);
+                    $joins .= "
 						LEFT JOIN
 							`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
 							ON (e.id = t{$field_id}_{$this->_key}.entry_id)
 					";
-					$where .= "
+                    $where .= "
 						AND (
 							t{$field_id}_{$this->_key}.handle = '{$value}'
 							OR t{$field_id}_{$this->_key}.value = '{$value}'
 						)
 					";
-				}
-			}
+                }
+            } else {
+                if (!is_array($data)) {
+                    $data = array($data);
+                }
 
-			else {
-				if (!is_array($data)) $data = array($data);
+                foreach ($data as &$value) {
+                    $value = $this->cleanValue($value);
+                }
 
-				foreach ($data as &$value) {
-					$value = $this->cleanValue($value);
-				}
-
-				$this->_key++;
-				$data = implode("', '", $data);
-				$joins .= "
+                ++$this->_key;
+                $data = implode("', '", $data);
+                $joins .= "
 					LEFT JOIN
 						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
 						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
 				";
-				$where .= "
+                $where .= "
 					AND (
 						t{$field_id}_{$this->_key}.handle IN ('{$data}')
 						OR t{$field_id}_{$this->_key}.value IN ('{$data}')
 					)
 				";
-			}
+            }
 
-			return true;
-		}
+            return true;
+        }
 
-	/*-------------------------------------------------------------------------
-		Sorting:
-	-------------------------------------------------------------------------*/
+    /*-------------------------------------------------------------------------
+        Sorting:
+    -------------------------------------------------------------------------*/
 
-		public function buildSortingSQL(&$joins, &$where, &$sort, $order='ASC'){
-			if(in_array(strtolower($order), array('random', 'rand'))) {
-				$sort = 'ORDER BY RAND()';
-			}
-			else {
-				$sort = sprintf(
-					'ORDER BY (
+        public function buildSortingSQL(&$joins, &$where, &$sort, $order = 'ASC')
+        {
+            if (in_array(strtolower($order), array('random', 'rand'))) {
+                $sort = 'ORDER BY RAND()';
+            } else {
+                $sort = sprintf(
+                    'ORDER BY (
 						SELECT %s
 						FROM tbl_entries_data_%d AS `ed`
 						WHERE entry_id = e.id
 					) %s',
-					'`ed`.value',
-					$this->get('id'),
-					$order
-				);
-			}
-		}
+                    '`ed`.value',
+                    $this->get('id'),
+                    $order
+                );
+            }
+        }
 
-	/*-------------------------------------------------------------------------
-		Grouping:
-	-------------------------------------------------------------------------*/
+    /*-------------------------------------------------------------------------
+        Grouping:
+    -------------------------------------------------------------------------*/
 
-		public function groupRecords($records) {
-			if (!is_array($records) or empty($records)) return;
+        public function groupRecords($records)
+        {
+            if (!is_array($records) or empty($records)) {
+                return;
+            }
 
-			$element = $this->get('element_name');
+            $element = $this->get('element_name');
 
-			$groups = array(
-				$element => array()
-			);
+            $groups = array(
+                $element => array(),
+            );
 
-			foreach ($records as $record) {
-				$data = $record->getData($this->get('id'));
-				$handle = $data['handle'];
+            foreach ($records as $record) {
+                $data = $record->getData($this->get('id'));
+                $handle = $data['handle'];
 
-				if (!isset($groups[$element][$handle])) {
-					$groups[$element][$handle] = array(
-						'attr'		=> array(
-							'handle'	=> $handle,
-							'value'		=> $data['value_formatted']
-						),
-						'records'	=> array(),
-						'groups'	=> array()
-					);
-				}
+                if (!isset($groups[$element][$handle])) {
+                    $groups[$element][$handle] = array(
+                        'attr' => array(
+                            'handle' => $handle,
+                            'value' => $data['value_formatted'],
+                        ),
+                        'records' => array(),
+                        'groups' => array(),
+                    );
+                }
 
-				$groups[$element][$handle]['records'][] = $record;
-			}
+                $groups[$element][$handle]['records'][] = $record;
+            }
 
-			return $groups;
-		}
-	}
+            return $groups;
+        }
+    }
