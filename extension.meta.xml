@@ -17,12 +17,17 @@
 		</author>
 	</authors>
 	<releases>
+		<release version="2.0.0" date="2016-07-13" min="2.3" max="2.7.x">
+			- Added reflection field handle to `param` node
+			- Moved `root` and `workspace` nodes to `param` node to conform with the front-end XML structure
+			- Added XSLT utitlity instructions
+		</release>
 		<release version="1.4.2" date="2016-01-29" min="2.3" max="2.6.x">
 			- Prevent the same field from being registered multiple times
-			- Added XML Importer Instructions
+			- Added XML Importer instructions
 		</release>
 		<release version="1.4.1" date="2015-01-12" min="2.3">
-			- Added XML Importer Support
+			- Added XML Importer support
 			- Added system date to generated entry XML
 		</release>
 		<release version="1.4.0" date="2013-06-22" min="2.3">
@@ -43,20 +48,20 @@
 			- Fixed a sanitisation issue on publish pages.
 			- Made compatible with Symphony 2.2.
 		</release>
-		<release version="1.0.9" date="2010-11-01" min="2.1.*">
+		<release version="1.0.9" date="2010-11-01" min="2.1.x">
 			- Bug with usage of appendFormattedElement fixed by michael-e.
 		</release>
-		<release version="1.0.8" date="2009-12-09" min="2.1.*">
+		<release version="1.0.8" date="2009-12-09" min="2.1.x">
 			- Some bug fixes and code cleanup.
 		</release>
-		<release version="1.0.7" date="2009-08-21" min="2.1.*">
+		<release version="1.0.7" date="2009-08-21" min="2.1.x">
 			- Fixed column sorting issues.
 			- Added more filter modes.
 		</release>
-		<release version="1.0.6" date="2009-04-23" min="2.1.*">
+		<release version="1.0.6" date="2009-04-23" min="2.1.x">
 			- Added a search: filter method to allow you to use boolean type searching.
 		</release>
-		<release version="1.0.6" date="2009-03-30" min="2.1.*">
+		<release version="1.0.6" date="2009-03-30" min="2.1.x">
 			- Fixed a number of possible encoding issues.
 		</release>
 	</releases>

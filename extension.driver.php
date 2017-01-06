@@ -1,18 +1,21 @@
 <?php
 
-	class Extension_ReflectionField extends Extension {
-	/*-------------------------------------------------------------------------
-		Definition:
-	-------------------------------------------------------------------------*/
+    class Extension_ReflectionField extends Extension
+    {
+        /*-------------------------------------------------------------------------
+        Definition:
+    -------------------------------------------------------------------------*/
 
-		protected static $fields = array();
+        protected static $fields = array();
 
-		public function uninstall() {
-			Symphony::Database()->query("DROP TABLE `tbl_fields_reflection`");
-		}
+        public function uninstall()
+        {
+            Symphony::Database()->query('DROP TABLE `tbl_fields_reflection`');
+        }
 
-		public function install() {
-			Symphony::Database()->query("
+        public function install()
+        {
+            Symphony::Database()->query("
 				CREATE TABLE IF NOT EXISTS `tbl_fields_reflection` (
 					`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 					`field_id` INT(11) UNSIGNED NOT NULL,
@@ -27,183 +30,232 @@
 				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 			");
 
-			return true;
-		}
+            return true;
+        }
 
-		public function update($previousVersion) {
-			// Update 1.0 installations
-			if (version_compare($previousVersion, '1.1', '<')) {
-				Symphony::Database()->query("ALTER TABLE `tbl_fields_reflection` ADD `xsltfile` VARCHAR(255) DEFAULT NULL");
-			}
+        public function update($previousVersion)
+        {
+            // Update 1.0 installations
+            if (version_compare($previousVersion, '1.1', '<')) {
+                Symphony::Database()->query('ALTER TABLE `tbl_fields_reflection` ADD `xsltfile` VARCHAR(255) DEFAULT NULL');
+            }
 
-			// Update 1.1 installations
-			if (version_compare($previousVersion, '1.2', '<')) {
-				Symphony::Database()->query("ALTER TABLE `tbl_fields_reflection` ADD `fetch_associated_counts` ENUM('yes','no') DEFAULT 'no'");
-			}
+            // Update 1.1 installations
+            if (version_compare($previousVersion, '1.2', '<')) {
+                Symphony::Database()->query("ALTER TABLE `tbl_fields_reflection` ADD `fetch_associated_counts` ENUM('yes','no') DEFAULT 'no'");
+            }
 
-			return true;
-		}
+            return true;
+        }
 
-		public function getSubscribedDelegates() {
-			return array(
-				array(
-					'page'		=> '/publish/new/',
-					'delegate'	=> 'EntryPostCreate',
-					'callback'	=> 'compileBackendFields'
-				),
-				array(
-					'page'		=> '/publish/edit/',
-					'delegate'	=> 'EntryPostEdit',
-					'callback'	=> 'compileBackendFields'
-				),
-				array(
-					'page'		=> '/xmlimporter/importers/run/',
-					'delegate'	=> 'XMLImporterEntryPostCreate',
-					'callback'	=> 'compileBackendFields'
-				),
-				array(
-					'page'		=> '/xmlimporter/importers/run/',
-					'delegate'	=> 'XMLImporterEntryPostEdit',
-					'callback'	=> 'compileBackendFields'
-				),
-				array(
-					'page'		=> '/frontend/',
-					'delegate'	=> 'EventPostSaveFilter',
-					'callback'	=> 'compileFrontendFields'
-				)
-			);
-		}
+        public function getSubscribedDelegates()
+        {
+            return array(
+                array(
+                    'page' => '/publish/new/',
+                    'delegate' => 'EntryPostCreate',
+                    'callback' => 'compileBackendFields',
+                ),
+                array(
+                    'page' => '/publish/edit/',
+                    'delegate' => 'EntryPostEdit',
+                    'callback' => 'compileBackendFields',
+                ),
+                array(
+                    'page' => '/xmlimporter/importers/run/',
+                    'delegate' => 'XMLImporterEntryPostCreate',
+                    'callback' => 'compileBackendFields',
+                ),
+                array(
+                    'page' => '/xmlimporter/importers/run/',
+                    'delegate' => 'XMLImporterEntryPostEdit',
+                    'callback' => 'compileBackendFields',
+                ),
+                array(
+                    'page' => '/frontend/',
+                    'delegate' => 'EventPostSaveFilter',
+                    'callback' => 'compileFrontendFields',
+                ),
+            );
+        }
 
-	/*-------------------------------------------------------------------------
-		Utilities:
-	-------------------------------------------------------------------------*/
+    /*-------------------------------------------------------------------------
+        Utilities:
+    -------------------------------------------------------------------------*/
 
-		public function getXPath($entry, $XSLTfilename = NULL, $fetch_associated_counts = NULL) {
-			$entry_xml = new XMLElement('entry');
-			$data = $entry->getData();
-			$fields = array();
+        public function getXPath($entry, $template = null, $fetch_associated_counts = null, $handle = 'reflection-field')
+        {
+            $xml = $this->buildXML($handle, $entry);
+            $dom = new DOMDocument();
+            $dom->strictErrorChecking = false;
+            $dom->loadXML($xml->generate(true));
 
-			$entry_xml->setAttribute('id', $entry->get('id'));
-			
-			//Add date created and edited values
-			$date = new XMLElement('system-date');
+            // Transform XML if template is provided
+            if (!empty($template)) {
+                $template = UTILITIES . '/' . preg_replace(array('%/+%', '%(^|/)../%'), '/', $template);
 
-			$date->appendChild(
-				General::createXMLDateObject(
-				DateTimeObj::get('U', $entry->get('creation_date')),
-				'created'
-				)
-			);
+                if (file_exists($template)) {
+                    $xslt = new DomDocument();
+                    $xslt->load($template);
 
-			$date->appendChild(
-				General::createXMLDateObject(
-				DateTimeObj::get('U', $entry->get('modification_date')),
-				'modified'
-				)
-			);
+                    $xslp = new XsltProcessor();
+                    $xslp->importStyleSheet($xslt);
 
-			$entry_xml->appendChild($date);
+                    $temp = $xslp->transformToDoc($dom);
 
-			//Reflect Workspace and Siteroot params
-			$workspace = new XMLElement('workspace', URL .'/workspace');
-			$root = new XMLElement('root', URL);
+                    if ($temp instanceof DOMDocument) {
+                        $dom = $temp;
+                    }
+                }
+            }
 
-			// Add associated entry counts
-			if($fetch_associated_counts == 'yes') {
-				$associated = $entry->fetchAllAssociatedEntryCounts();
+            // Create xPath object
+            $xpath = new DOMXPath($dom);
 
-				if (is_array($associated) and !empty($associated)) {
-					foreach ($associated as $section_id => $count) {
-						$section = SectionManager::fetch($section_id);
+            if (version_compare(phpversion(), '5.3', '>=')) {
+                $xpath->registerPhpFunctions();
+            }
 
-						if(($section instanceof Section) === false) continue;
-						$entry_xml->setAttribute($section->get('handle'), (string)$count);
-					}
-				}
-			}
+            return $xpath;
+        }
 
-			// Add fields:
-			foreach ($data as $field_id => $values) {
-				if (empty($field_id)) continue;
+        private function buildXML($handle = 'reflection-field', $entry)
+        {
+            $xml = new XMLElement('data');
 
-				$field = FieldManager::fetch($field_id);
-				$field->appendFormattedElement($entry_xml, $values, false, null, $entry->get('id'));
-			}
+            $xml->appendChild($this->buildParams());
+            $xml->appendChild($this->buildEntry($handle, $entry));
 
-			$xml = new XMLElement('data');
-			$xml->appendChild($entry_xml);
-			$xml->appendChild($workspace);
-			$xml->appendChild($root);
+            return $xml;
+        }
 
-			// Build some context
-			$section = SectionManager::fetch($entry->get('section_id'));
-			$params = new XMLElement('params');
-			$params->appendChild(
-				new XMLElement('section-handle', $section->get('handle'))
-			);
-			$params->appendChild(
-				new XMLElement('entry-id', $entry->get('id'))
-			);
-			$xml->prependChild($params);
+        private function buildParams()
+        {
+            $xml = new XMLElement('params');
 
-			$dom = new DOMDocument();
-			$dom->strictErrorChecking = false;
-			$dom->loadXML($xml->generate(true));
+            $upload_size_php = ini_size_to_bytes(ini_get('upload_max_filesize'));
+            $upload_size_sym = Symphony::Configuration()->get('max_upload_size', 'admin');
+            $date = new DateTime();
 
-			if (!empty($XSLTfilename)) {
-				$XSLTfilename = UTILITIES . '/'. preg_replace(array('%/+%', '%(^|/)../%'), '/', $XSLTfilename);
-				if (file_exists($XSLTfilename)) {
-					$XSLProc = new XsltProcessor;
+            $params = array(
+                'today' => $date->format('Y-m-d'),
+                'current-time' => $date->format('H:i'),
+                'this-year' => $date->format('Y'),
+                'this-month' => $date->format('m'),
+                'this-day' => $date->format('d'),
+                'timezone' => $date->format('P'),
+                'website-name' => Symphony::Configuration()->get('sitename', 'general'),
+                'root' => URL,
+                'workspace' => URL . '/workspace',
+                'http-host' => HTTP_HOST,
+                'upload-limit' => min($upload_size_php, $upload_size_sym),
+                'symphony-version' => Symphony::Configuration()->get('version', 'symphony'),
+            );
 
-					$xslt = new DomDocument;
-					$xslt->load($XSLTfilename);
+            foreach($params as $name => $value) {
+                $xml->appendChild(
+                    new XMLElement($name, $value)
+                );
+            }
 
-					$XSLProc->importStyleSheet($xslt);
+            return $xml;
+        }
 
-					// Set some context
-					$XSLProc->setParameter('', array(
-						'section-handle' => $section->get('handle'),
-						'entry-id' => $entry->get('id')
-					));
+        private function buildEntry($handle = 'reflection-field', $entry)
+        {
+            $xml = new XMLElement($handle);
+            $data = $entry->getData();
 
-					$temp = $XSLProc->transformToDoc($dom);
+            // Section context
+            $section_data = SectionManager::fetch($entry->get('section_id'));
+            $section = new XMLElement('section', $section_data->get('name'));
+            $section->setAttribute('id', $entry->get('section_id'));
+            $section->setAttribute('handle', $section_data->get('handle'));
 
-					if ($temp instanceof DOMDocument) {
-						$dom = $temp;
-					}
-				}
-			}
+            // Entry data
+            $entry_xml = new XMLElement('entry');
+            $entry_xml->setAttribute('id', $entry->get('id'));
 
-			$xpath = new DOMXPath($dom);
+            // Add associated entry counts
+            if ($fetch_associated_counts == 'yes') {
+                $associated = $entry->fetchAllAssociatedEntryCounts();
 
-			if (version_compare(phpversion(), '5.3', '>=')) {
-				$xpath->registerPhpFunctions();
-			}
+                if (is_array($associated) and !empty($associated)) {
+                    foreach ($associated as $section_id => $count) {
+                        $section_data = SectionManager::fetch($section_id);
 
-			return $xpath;
-		}
+                        if (($section_data instanceof Section) === false) {
+                            continue;
+                        }
 
-	/*-------------------------------------------------------------------------
-		Fields:
-	-------------------------------------------------------------------------*/
+                        $entry_xml->setAttribute($section_data->get('handle'), (string) $count);
+                    }
+                }
+            }
 
-		public function registerField(Field $field) {
-			self::$fields[$field->get('id')] = $field;
-		}
+            // Add field data
+            foreach ($data as $field_id => $values) {
+                if (empty($field_id)) {
+                    continue;
+                }
 
-		public function compileBackendFields($context) {
-			if ( empty(self::$fields) ) {
-				self::$fields = $context['section']->fetchFields('reflection');
-			}
+                $field = FieldManager::fetch($field_id);
+                $field->appendFormattedElement($entry_xml, $values, false, null, $entry->get('id'));
+            }
 
-			foreach (self::$fields as $field) {
-				$field->compile($context['entry']);
-			}
-		}
+            // Add entry system dates
+            $entry_xml->appendChild($this->buildSystemDate($entry));
 
-		public function compileFrontendFields($context) {
-			foreach (self::$fields as $field) {
-				$field->compile($context['entry']);
-			}
-		}
-	}
+            // Append nodes
+            $xml->appendChild($section);
+            $xml->appendChild($entry_xml);
+
+            return $xml;
+        }
+
+        private function buildSystemDate($entry)
+        {
+            $xml = new XMLElement('system-date');
+
+            $created = General::createXMLDateObject(
+                DateTimeObj::get('U', $entry->get('creation_date')),
+                'created'
+            );
+            $modified = General::createXMLDateObject(
+                DateTimeObj::get('U', $entry->get('modification_date')),
+                'modified'
+            );
+
+            $xml->appendChild($created);
+            $xml->appendChild($modified);
+
+            return $xml;
+        }
+
+    /*-------------------------------------------------------------------------
+        Fields:
+    -------------------------------------------------------------------------*/
+
+        public function registerField(Field $field)
+        {
+            self::$fields[$field->get('id')] = $field;
+        }
+
+        public function compileBackendFields($context)
+        {
+            if (empty(self::$fields)) {
+                self::$fields = $context['section']->fetchFields('reflection');
+            }
+
+            foreach (self::$fields as $field) {
+                $field->compile($context['entry']);
+            }
+        }
+
+        public function compileFrontendFields($context)
+        {
+            foreach (self::$fields as $field) {
+                $field->compile($context['entry']);
+            }
+        }
+    }
