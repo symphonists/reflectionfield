@@ -74,7 +74,7 @@
         Settings:
     -------------------------------------------------------------------------*/
 
-        public function displaySettingsPanel(&$wrapper, $errors = null)
+        public function displaySettingsPanel(XMLElement &$wrapper, $errors = null)
         {
             parent::displaySettingsPanel($wrapper, $errors);
 
@@ -272,7 +272,7 @@
             return self::__OK__;
         }
 
-        public function processRawFieldData($data, &$status, $simulate = false, $entry_id = null)
+        public function processRawFieldData($data, &$status, &$message = null, $simulate = false, $entry_id = null)
         {
             $status = self::__OK__;
 
@@ -300,7 +300,7 @@
             $wrapper->appendChild($element);
         }
 
-        public function prepareTableValue($data, XMLElement $link = null)
+        public function prepareTableValue($data, XMLElement $link = null, $entry_id = null)
         {
             if (empty($data)) {
                 return;
