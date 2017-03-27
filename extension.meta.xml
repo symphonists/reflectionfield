@@ -17,6 +17,9 @@
 		</author>
 	</authors>
 	<releases>
+		<release version="2.0.1" date="2017-01-27" min="2.3" max="2.x.x">
+			- PHP 7 compatibility
+		</release>
 		<release version="2.0.0" date="2017-01-06" min="2.3" max="2.x.x">
 			- Added reflection field handle to `param` node
 			- Moved `root` and `workspace` nodes to `param` node to conform with the front-end XML structure
