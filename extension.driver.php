@@ -33,7 +33,7 @@
             return true;
         }
 
-        public function update($previousVersion)
+        public function update($previousVersion = false)
         {
             // Update 1.0 installations
             if (version_compare($previousVersion, '1.1', '<')) {
