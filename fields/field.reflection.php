@@ -387,9 +387,9 @@
 
             // Find replacements:
             foreach ($matches[0] as $match) {
-                $result = $xpath->evaluate('string(//' . trim($match, '{}') . ')');
+                $result = @$xpath->evaluate('string(' . trim($match, '{}') . ')');
 
-                if (!is_null($result)) {
+                if (!empty($result)) {
                     $replacements[$match] = trim($result);
                 } else {
                     $replacements[$match] = '';
