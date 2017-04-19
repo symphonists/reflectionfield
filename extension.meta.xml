@@ -17,6 +17,9 @@
 		</author>
 	</authors>
 	<releases>
+		<release version="2.0.2" date="2017-04-19" min="2.3" max="2.x.x">
+			- Fix issues with xslt functions
+		</release>
 		<release version="2.0.1" date="2017-01-27" min="2.3" max="2.x.x">
 			- PHP 7 compatibility
 		</release>
