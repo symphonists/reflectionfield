@@ -3,7 +3,7 @@
 This field generates values based on other fields from the same entry.
 Uses XPath and optionally XSLT.
 
-# Usage
+## Usage
 
 When saving an entry Reflection field creates an internal `data` structure similar to what Symphony provides on the front-end. Besides the field data contextual parameters like the root and workspace paths and the section handle are available as well.
 
@@ -42,15 +42,15 @@ When saving an entry Reflection field creates an internal `data` structure simil
 
 **Note:** Version 2.0 changed the `data` structure to conform with the front-end. The `root` and `workspace` nodes moved to the parameter pool. The `entry-id` node was removed as the id was already available on the `entry` node.
 
-## XSLT Utilities
+### XSLT Utilities
 
 XSL templates are used to manipulate the XML data before building the reflection expression. Any template in `/workspace/utilities` can be attached to the field: it will be provided with the above XML. The extension expects you to return an XML structure again, that is then used inside the expression field.
 
-## Expressions
+### Expressions
 
 Expressions are used to build the field's content. You can add static content or markup, dynamic values can be added using curly braces containing and xPath expression to find the needed data. If you don't use an XSLT utility, the xPath expression is evaluated against the above XML. If you transformed the source data using a template, the xPath is evaluated against the returned XML structure you created.
 
-# Usage with XML Importer
+## Usage with XML Importer
 
 Reflection Field assumes that the entry has already saved some data for the said field, and then seeks to update the database directly with the correct reflection generated content.
 In the case of XML Importer this means that you have to include the Reflection field within the import items, otherwise XML Importer will not find any data within your database to update.
