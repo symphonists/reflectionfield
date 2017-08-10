@@ -142,7 +142,7 @@
             $help->setAttribute('class', 'help');
 
             $help->setValue(__('
-				To access the other fields, use XPath: <code>{entry/field-one} static text {entry/field-two}</code>.
+				To access the other fields, use XPath: <code>{//entry/field-one} static text {//entry/field-two}</code>.
 			'));
 
             $label->appendChild($help);
