@@ -17,6 +17,9 @@
 		</author>
 	</authors>
 	<releases>
+		<release version="2.0.3" date="2017-09-10" min="2.3" max="2.x.x">
+			- Fix field caption and thus `1.D` in  https://github.com/symphonists/reflectionfield/issues/35 
+		</release>
 		<release version="2.0.2" date="2017-04-19" min="2.3" max="2.x.x">
 			- Fix issues with xslt functions
 		</release>
