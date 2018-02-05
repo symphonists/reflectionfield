@@ -387,38 +387,9 @@
             // Find queries:
             preg_match_all('/\{[^\}]+\}/', $expression, $matches);
 
-            // Get root node name
-            $root_node_name = $xpath->evaluate('name(/*)');
-
-            // Find replacements
-            // including modifications for edge-cases (#35)
+            // Find replacements:
             foreach ($matches[0] as $match) {
-
-                // Add a leading '/' if the expression starts with the root node name
-                // Fixes expressions 1.J and 2.B
-                if (preg_match('#^{'.$root_node_name.'#', $match)) {
-                    $result = @$xpath->evaluate('string(/' . trim($match, '{}') . ')');
-                }
-
-                // Insert a '/' if the expression contains a '(' directly followed by the root node name
-                // Fixes expression 1.J (when used inside an xpath-function)
-                else if (strpos($match,'('.$root_node_name) !== false) {
-                    $search = '(';
-                    $index = strpos($match, $search);
-                    $string = substr_replace($match, $search.'/', $index, 1);
-                    $result = @$xpath->evaluate('string('. trim($string, '{}') . ')');
-                }
-
-                // Add the name of the root node if the expression only consist of '/'
-                // Fixes expression 2.A
-                else if ($match === '{/}') {
-                    $result = @$xpath->evaluate('string(/'. $root_node_name . ')');
-                }
-
-                // Use the given expression without modifications
-                else {
-                    $result = @$xpath->evaluate('string(' . trim($match, '{}') . ')');
-                }
+                $result = @$xpath->evaluate('string(' . trim($match, '{}') . ')');
 
                 if (!empty($result)) {
                     $replacements[$match] = trim($result);
