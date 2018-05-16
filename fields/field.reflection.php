@@ -244,9 +244,13 @@
             }
 
             if ($this->get('hide') != 'yes') {
-                $value = isset($data['value_formatted'])
-                    ? $data['value_formatted']
-                    : null;
+                if(isset($data['value_formatted'])) {
+					$value = is_array($data['value_formatted'])
+                    ? $data['value_formatted'][0]
+                    : $data['value_formatted'];
+				} else {
+					$value = null;
+				}
                 $label = Widget::Label($this->get('label'));
                 $label->appendChild(
                     Widget::Input(
