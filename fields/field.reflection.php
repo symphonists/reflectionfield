@@ -386,7 +386,7 @@
             preg_match_all('/\{[^\}]+\}/', $expression, $matches);
 
             // Get root node name
-            $root_node_name = $xpath->evaluate('name(/*)');
+            $root_node_name = preg_quote ((string)$xpath->evaluate('name(/*)'), '#');
 
             // Find replacements
             // including modifications for edge-cases (#35)
@@ -407,7 +407,7 @@
                     $result = @$xpath->evaluate('string('. trim($string, '{}') . ')');
                 }
 
-                // Add the name of the root node if the expression only consist of '/'
+                // Add the name of the root node if the expression only consists of '/'
                 // Fixes expression 2.A
                 else if ($match === '{/}') {
                     $result = @$xpath->evaluate('string(/'. $root_node_name . ')');
