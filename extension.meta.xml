@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <extension id="reflectionfield" status="released" xmlns="http://symphony-cms.com/schemas/extension/1.0">
 	<name>Reflection Field</name>
-	<description>Populate this field's value using values from other fields in the same entry. Uses XPath and optionally XSLT.</description>
+	<description>This field generates values based on other fields from the same entry. Uses XPath and optionally XSLT.</description>
 	<repo type="github">https://github.com/symphonists/reflectionfield</repo>
-	<url type="discuss">http://symphony-cms.com/discuss/thread/809/</url>
+	<repo type="issues">https://github.com/symphonists/reflectionfield/issues/</repo>
+	<url type="discuss">http://www.getsymphony.com/discuss/thread/809/</url>
 	<types>
 		<type>Field Types</type>
 	</types>
@@ -17,8 +18,11 @@
 		</author>
 	</authors>
 	<releases>
+		<release version="2.0.4" date="2018-06-02" min="2.3" max="2.x.x">
+			- Fix XPath-expressions [#35](https://github.com/symphonists/reflectionfield/issues/35)
+		</release>
 		<release version="2.0.3" date="2017-09-10" min="2.3" max="2.x.x">
-			- Fix field caption and thus `1.D` in  https://github.com/symphonists/reflectionfield/issues/35 
+			- Fix field caption and thus `1.D` in [#35](https://github.com/symphonists/reflectionfield/issues/35)
 		</release>
 		<release version="2.0.2" date="2017-04-19" min="2.3" max="2.x.x">
 			- Fix issues with xslt functions
