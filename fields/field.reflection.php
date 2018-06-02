@@ -385,8 +385,11 @@
             // Find queries:
             preg_match_all('/\{[^\}]+\}/', $expression, $matches);
 
-            // Get root node name
+            // Get root node name (will be 'data' if not otherwise defined in a xslt utility)
             $root_node_name = preg_quote ((string)$xpath->evaluate('name(/*)'), '#');
+
+            // Prepare the root node name for preg_* calls
+            $root_node_name_quoted = preg_quote ($root_node_name, '#');
 
             // Find replacements
             // including modifications for edge-cases (#35)
@@ -394,7 +397,7 @@
 
                 // Add a leading '/' if the expression starts with the root node name
                 // Fixes expressions 1.J and 2.B
-                if (preg_match('#^{'.$root_node_name.'#', $match)) {
+                if (preg_match('#^{'.$root_node_name_quoted.'#', $match)) {
                     $result = @$xpath->evaluate('string(/' . trim($match, '{}') . ')');
                 }
 
