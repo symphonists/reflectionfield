@@ -386,7 +386,7 @@
             preg_match_all('/\{[^\}]+\}/', $expression, $matches);
 
             // Get root node name (will be 'data' if not otherwise defined in a xslt utility)
-            $root_node_name = preg_quote ((string)$xpath->evaluate('name(/*)'), '#');
+            $root_node_name = (string)$xpath->evaluate('name(/*)');
 
             // Prepare the root node name for preg_* calls
             $root_node_name_quoted = preg_quote ($root_node_name, '#');
