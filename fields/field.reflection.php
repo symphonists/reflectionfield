@@ -31,18 +31,18 @@
             $field_id = $this->get('id');
 
             return Symphony::Database()->query("
-				CREATE TABLE IF NOT EXISTS `tbl_entries_data_{$field_id}` (
-					`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-					`entry_id` INT(11) UNSIGNED NOT NULL,
-					`handle` VARCHAR(255) DEFAULT NULL,
-					`value` TEXT DEFAULT NULL,
-					`value_formatted` TEXT DEFAULT NULL,
-					PRIMARY KEY (`id`),
-					KEY `entry_id` (`entry_id`),
-					FULLTEXT KEY `value` (`value`),
-					FULLTEXT KEY `value_formatted` (`value_formatted`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-			");
+                CREATE TABLE IF NOT EXISTS `tbl_entries_data_{$field_id}` (
+                    `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+                    `entry_id` INT(11) UNSIGNED NOT NULL,
+                    `handle` VARCHAR(255) DEFAULT NULL,
+                    `value` TEXT DEFAULT NULL,
+                    `value_formatted` TEXT DEFAULT NULL,
+                    PRIMARY KEY (`id`),
+                    KEY `entry_id` (`entry_id`),
+                    FULLTEXT KEY `value` (`value`),
+                    FULLTEXT KEY `value_formatted` (`value_formatted`)
+                ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+            ");
         }
 
         public function allowDatasourceOutputGrouping()
@@ -141,9 +141,7 @@
             $help = new XMLElement('p');
             $help->setAttribute('class', 'help');
 
-            $help->setValue(__('
-				To access the other fields, use XPath: <code>{//entry/field-one} static text {//entry/field-two}</code>.
-			'));
+            $help->setValue(__('Use XPath to access other fields: <code>{//entry/field-one} static text {//entry/field-two}</code>.'));
 
             $label->appendChild($help);
             $wrapper->appendChild($label);
@@ -382,44 +380,54 @@
             $expression = $this->get('expression');
             $replacements = array();
 
-            // Find queries:
+            // Extract xpath queries from the expression
             preg_match_all('/\{[^\}]+\}/', $expression, $matches);
 
-            // Get root node name (will be 'data' if not otherwise defined in a xslt utility)
+            // Get root node name (will be 'data' if not otherwise defined in a
+            // xslt utility)
             $root_node_name = (string)$xpath->evaluate('name(/*)');
 
-            // Prepare the root node name for preg_* calls
-            $root_node_name_quoted = preg_quote ($root_node_name, '#');
-
             // Find replacements
-            // including modifications for edge-cases (#35)
+            // Including modifications for edge-cases (#35)
             foreach ($matches[0] as $match) {
 
-                // Add a leading '/' if the expression starts with the root node name
-                // Fixes expressions 1.J and 2.B
-                if (preg_match('#^{'.$root_node_name_quoted.'#', $match)) {
-                    $result = @$xpath->evaluate('string(/' . trim($match, '{}') . ')');
+                // Add leading slashes if the expression starts with 'entry'
+                // or '/entry'. While these are not valid xpath expressions in
+                // the given context, they make the expressions in 2.X backwards
+                // compatible with 1.X without causing any problems.
+                if (strpos($match, '{entry/' ) === 0) {
+                    $path = '//' . trim($match, '{}');
+                } else if (strpos($match, '{/entry/' ) === 0) {
+                    $path = '/' . trim($match, '{}');
                 }
 
-                // Insert a '/' if the expression contains a '(' directly followed by the root node name
-                // Fixes expression 1.J (when used inside an xpath-function)
+                // Add a leading '/' if the expression starts directly with the
+                // root node name.
+                else if (strpos($match, '{'.$root_node_name ) === 0) {
+                    $path = '/' . trim($match, '{}');
+                }
+
+                // Insert a '/' if the expression contains a '(' directly followed
+                // by the root node name
                 else if (strpos($match,'('.$root_node_name) !== false) {
                     $search = '(';
                     $index = strpos($match, $search);
                     $string = substr_replace($match, $search.'/', $index, 1);
-                    $result = @$xpath->evaluate('string('. trim($string, '{}') . ')');
+                    $path =  trim($string, '{}');
                 }
 
                 // Add the name of the root node if the expression only consists of '/'
-                // Fixes expression 2.A
                 else if ($match === '{/}') {
-                    $result = @$xpath->evaluate('string(/'. $root_node_name . ')');
+                    $path = '/' . $root_node_name;
                 }
 
                 // Use the given expression without modifications
                 else {
-                    $result = @$xpath->evaluate('string(' . trim($match, '{}') . ')');
+                    $path = trim($match, '{}');
                 }
+
+                // Evaluate the (modified) xpath:
+                $result = @$xpath->evaluate('string(' . $path . ')');
 
                 if (!empty($result)) {
                     $replacements[$match] = trim($result);
@@ -491,13 +499,13 @@
                 $data = $this->cleanValue($data);
                 ++$this->_key;
                 $joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
-				";
+                    LEFT JOIN
+                        `tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
+                        ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+                ";
                 $where .= "
-					AND {$negate}(MATCH (t{$field_id}_{$this->_key}.value) AGAINST ('{$data}' IN BOOLEAN MODE))
-				";
+                    AND {$negate}(MATCH (t{$field_id}_{$this->_key}.value) AGAINST ('{$data}' IN BOOLEAN MODE))
+                ";
             } elseif (preg_match('/^(not-)?((starts|ends)-with|contains):\s*/', $data[0], $matches)) {
                 $data = trim(array_pop(explode(':', $data[0], 2)));
 
@@ -520,16 +528,16 @@
 
                 ++$this->_key;
                 $joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
-				";
+                    LEFT JOIN
+                        `tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
+                        ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+                ";
                 $where .= "
-					AND {$negate}(
-						t{$field_id}_{$this->_key}.handle LIKE '{$data}'
-						OR t{$field_id}_{$this->_key}.value LIKE '{$data}'
-					)
-				";
+                    AND {$negate}(
+                        t{$field_id}_{$this->_key}.handle LIKE '{$data}'
+                        OR t{$field_id}_{$this->_key}.value LIKE '{$data}'
+                    )
+                ";
             } elseif (preg_match('/^(?:equal to or )?(?:less than|more than|equal to) -?\d+(?:\.\d+)?$/i', $data[0])) {
                 $comparisons = array();
                 foreach ($data as $string) {
@@ -558,35 +566,35 @@
                 if (!empty($comparisons)) {
                     ++$this->_key;
                     $joins .= "
-						LEFT JOIN
-							`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-							ON (e.id = t{$field_id}_{$this->_key}.entry_id)
-					";
+                        LEFT JOIN
+                            `tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
+                            ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+                    ";
 
                     $value = " t{$field_id}_{$this->_key}.value ";
                     $comparisons = $value.implode(' '.($andOperation ? 'AND' : 'OR').$value, $comparisons);
 
                     $where .= "
-						AND (
-							{$comparisons}
-						)
-					";
+                        AND (
+                            {$comparisons}
+                        )
+                    ";
                 }
             } elseif ($andOperation) {
                 foreach ($data as $value) {
                     ++$this->_key;
                     $value = $this->cleanValue($value);
                     $joins .= "
-						LEFT JOIN
-							`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-							ON (e.id = t{$field_id}_{$this->_key}.entry_id)
-					";
+                        LEFT JOIN
+                            `tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
+                            ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+                    ";
                     $where .= "
-						AND (
-							t{$field_id}_{$this->_key}.handle = '{$value}'
-							OR t{$field_id}_{$this->_key}.value = '{$value}'
-						)
-					";
+                        AND (
+                            t{$field_id}_{$this->_key}.handle = '{$value}'
+                            OR t{$field_id}_{$this->_key}.value = '{$value}'
+                        )
+                    ";
                 }
             } else {
                 if (!is_array($data)) {
@@ -600,16 +608,16 @@
                 ++$this->_key;
                 $data = implode("', '", $data);
                 $joins .= "
-					LEFT JOIN
-						`tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
-						ON (e.id = t{$field_id}_{$this->_key}.entry_id)
-				";
+                    LEFT JOIN
+                        `tbl_entries_data_{$field_id}` AS t{$field_id}_{$this->_key}
+                        ON (e.id = t{$field_id}_{$this->_key}.entry_id)
+                ";
                 $where .= "
-					AND (
-						t{$field_id}_{$this->_key}.handle IN ('{$data}')
-						OR t{$field_id}_{$this->_key}.value IN ('{$data}')
-					)
-				";
+                    AND (
+                        t{$field_id}_{$this->_key}.handle IN ('{$data}')
+                        OR t{$field_id}_{$this->_key}.value IN ('{$data}')
+                    )
+                ";
             }
 
             return true;
@@ -626,10 +634,10 @@
             } else {
                 $sort = sprintf(
                     'ORDER BY (
-						SELECT %s
-						FROM tbl_entries_data_%d AS `ed`
-						WHERE entry_id = e.id
-					) %s',
+                        SELECT %s
+                        FROM tbl_entries_data_%d AS `ed`
+                        WHERE entry_id = e.id
+                    ) %s',
                     '`ed`.value',
                     $this->get('id'),
                     $order
