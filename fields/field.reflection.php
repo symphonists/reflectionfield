@@ -185,7 +185,6 @@
             Allow Override
         ---------------------------------------------------------------------*/
 
-            /*
             $label = Widget::Label();
             $input = Widget::Input("fields[{$order}][allow_override]", 'yes', 'checkbox');
 
@@ -195,7 +194,6 @@
 
             $label->setValue($input->generate() . ' Allow value to be manually overridden');
             $wrapper->appendChild($label);
-            */
 
         /*---------------------------------------------------------------------
             Hide input
@@ -234,7 +232,7 @@
                 'xsltfile' => $this->get('xsltfile'),
                 'expression' => $this->get('expression'),
                 'formatter' => $this->get('formatter'),
-                'override' => $this->get('override'),
+                'override' => $this->get('allow_override'),
                 'fetch_associated_counts' => $this->get('fetch_associated_counts'),
                 'hide' => $this->get('hide'),
             );
@@ -467,20 +465,19 @@
                 $value_formatted = General::sanitize($value);
             }
 
-            $data = array(
+            $data = [
                 'handle' => Lang::createHandle($value),
                 'value' => $value,
                 'value_formatted' => $value_formatted,
-            );
+            ];
 
             // Save:
-            $result = Symphony::Database()->update(
-                $data,
-                "tbl_entries_data_{$field_id}",
-                "`entry_id` = '{$entry_id}'"
-            );
-
-            $entry->setData($field_id, $data);
+            return Symphony::Database()
+                ->update('tbl_entries_data_' . $field_id)
+                ->set($data)
+                ->where(['entry_id' => $entry_id])
+                ->execute()
+                ->success();
         }
 
     /*-------------------------------------------------------------------------

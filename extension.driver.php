@@ -10,7 +10,6 @@
 
         public function uninstall()
         {
-            // Symphony::Database()->query('DROP TABLE `tbl_fields_reflection`');
             return Symphony::Database()
                 ->drop('tbl_fields_reflection')
                 ->ifExists()
@@ -20,22 +19,6 @@
 
         public function install()
         {
-   //          Symphony::Database()->query("
-			// 	CREATE TABLE IF NOT EXISTS `tbl_fields_reflection` (
-			// 		`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-			// 		`field_id` INT(11) UNSIGNED NOT NULL,
-			// 		`xsltfile` VARCHAR(255) DEFAULT NULL,
-			// 		`expression` VARCHAR(255) DEFAULT NULL,
-			// 		`formatter` VARCHAR(255) DEFAULT NULL,
-			// 		`override` ENUM('yes', 'no') DEFAULT 'no',
-			// 		`hide` ENUM('yes', 'no') DEFAULT 'no',
-			// 		`fetch_associated_counts` ENUM('yes','no') DEFAULT 'no',
-			// 		PRIMARY KEY (`id`),
-			// 		KEY `field_id` (`field_id`)
-			// 	) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-			// ");
-
-   //          return true;
             return Symphony::Database()
                 ->create('tbl_fields_reflection')
                 ->ifNotExists()
@@ -87,7 +70,6 @@
         {
             // Update 1.0 installations
             if (version_compare($previousVersion, '1.1', '<')) {
-                // Symphony::Database()->query('ALTER TABLE `tbl_fields_reflection` ADD `xsltfile` VARCHAR(255) DEFAULT NULL');
                 Symphony::Database()
                     ->alter('tbl_fields_reflection')
                     ->add([
@@ -102,7 +84,6 @@
 
             // Update 1.1 installations
             if (version_compare($previousVersion, '1.2', '<')) {
-                // Symphony::Database()->query("ALTER TABLE `tbl_fields_reflection` ADD `fetch_associated_counts` ENUM('yes','no') DEFAULT 'no'");
                 Symphony::Database(tbl_fields_reflection)
                     ->alter('')
                     ->add([
