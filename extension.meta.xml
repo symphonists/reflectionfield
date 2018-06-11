@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <extension id="reflectionfield" status="released" xmlns="http://symphony-cms.com/schemas/extension/1.0">
-	<name>Reflection Field</name>
+	<name>Field: Reflection</name>
 	<description>This field generates values based on other fields from the same entry. Uses XPath and optionally XSLT.</description>
 	<repo type="github">https://github.com/symphonists/reflectionfield</repo>
 	<repo type="issues">https://github.com/symphonists/reflectionfield/issues/</repo>

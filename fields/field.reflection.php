@@ -28,21 +28,38 @@
 
         public function createTable()
         {
-            $field_id = $this->get('id');
-
-            return Symphony::Database()->query("
-                CREATE TABLE IF NOT EXISTS `tbl_entries_data_{$field_id}` (
-                    `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-                    `entry_id` INT(11) UNSIGNED NOT NULL,
-                    `handle` VARCHAR(255) DEFAULT NULL,
-                    `value` TEXT DEFAULT NULL,
-                    `value_formatted` TEXT DEFAULT NULL,
-                    PRIMARY KEY (`id`),
-                    KEY `entry_id` (`entry_id`),
-                    FULLTEXT KEY `value` (`value`),
-                    FULLTEXT KEY `value_formatted` (`value_formatted`)
-                ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-            ");
+            return Symphony::Database()
+                ->create('tbl_entries_data_' . $this->get('id'))
+                ->ifNotExists()
+                ->charset('utf8')
+                ->collate('utf8_unicode_ci')
+                ->fields([
+                    'id' => [
+                        'type' => 'int(11)',
+                        'auto' => true,
+                    ],
+                    'entry_id' => 'int(11)',
+                    'handle' => [
+                        'type' => 'varchar(255)',
+                        'null' => true,
+                    ],
+                    'value' => [
+                        'type' => 'text',
+                        'null' => true,
+                    ],
+                    'value_formatted' => [
+                        'type' => 'text',
+                        'null' => true,
+                    ],
+                ])
+                ->keys([
+                    'id' => 'primary',
+                    'entry_id' => 'key',
+                    'value' => 'fulltext',
+                    'value_formatted' => 'fulltext',
+                ])
+                ->execute()
+                ->success();
         }
 
         public function allowDatasourceOutputGrouping()

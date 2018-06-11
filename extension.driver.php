@@ -10,39 +10,110 @@
 
         public function uninstall()
         {
-            Symphony::Database()->query('DROP TABLE `tbl_fields_reflection`');
+            // Symphony::Database()->query('DROP TABLE `tbl_fields_reflection`');
+            return Symphony::Database()
+                ->drop('tbl_fields_reflection')
+                ->ifExists()
+                ->execute()
+                ->success();
         }
 
         public function install()
         {
-            Symphony::Database()->query("
-				CREATE TABLE IF NOT EXISTS `tbl_fields_reflection` (
-					`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-					`field_id` INT(11) UNSIGNED NOT NULL,
-					`xsltfile` VARCHAR(255) DEFAULT NULL,
-					`expression` VARCHAR(255) DEFAULT NULL,
-					`formatter` VARCHAR(255) DEFAULT NULL,
-					`override` ENUM('yes', 'no') DEFAULT 'no',
-					`hide` ENUM('yes', 'no') DEFAULT 'no',
-					`fetch_associated_counts` ENUM('yes','no') DEFAULT 'no',
-					PRIMARY KEY (`id`),
-					KEY `field_id` (`field_id`)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-			");
+   //          Symphony::Database()->query("
+			// 	CREATE TABLE IF NOT EXISTS `tbl_fields_reflection` (
+			// 		`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+			// 		`field_id` INT(11) UNSIGNED NOT NULL,
+			// 		`xsltfile` VARCHAR(255) DEFAULT NULL,
+			// 		`expression` VARCHAR(255) DEFAULT NULL,
+			// 		`formatter` VARCHAR(255) DEFAULT NULL,
+			// 		`override` ENUM('yes', 'no') DEFAULT 'no',
+			// 		`hide` ENUM('yes', 'no') DEFAULT 'no',
+			// 		`fetch_associated_counts` ENUM('yes','no') DEFAULT 'no',
+			// 		PRIMARY KEY (`id`),
+			// 		KEY `field_id` (`field_id`)
+			// 	) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			// ");
 
-            return true;
+   //          return true;
+            return Symphony::Database()
+                ->create('tbl_fields_reflection')
+                ->ifNotExists()
+                ->charset('utf8')
+                ->collate('utf8_unicode_ci')
+                ->fields([
+                    'id' => [
+                        'type' => 'int(11)',
+                        'auto' => true,
+                    ],
+                    'field_id' => 'int(11)',
+                    'xsltfile' => [
+                        'type' => 'varchar(255)',
+                        'null' => true,
+                    ],
+                   'expression' => [
+                        'type' => 'varchar(255)',
+                        'null' => true,
+                    ],
+                    'formatter' => [
+                        'type' => 'varchar(255)',
+                        'null' => true,
+                    ],
+                    'override' => [
+                        'type' => 'enum',
+                        'values' => ['yes', 'no'],
+                        'default' => 'no',
+                    ],
+                    'hide' => [
+                        'type' => 'enum',
+                        'values' => ['yes', 'no'],
+                        'default' => 'no',
+                    ],
+                    'fetch_associated_counts' => [
+                        'type' => 'enum',
+                        'values' => ['yes', 'no'],
+                        'default' => 'no',
+                    ],
+                ])
+                ->keys([
+                    'id' => 'primary',
+                    'field_id' => 'key',
+                ])
+                ->execute()
+                ->success();
         }
 
         public function update($previousVersion = false)
         {
             // Update 1.0 installations
             if (version_compare($previousVersion, '1.1', '<')) {
-                Symphony::Database()->query('ALTER TABLE `tbl_fields_reflection` ADD `xsltfile` VARCHAR(255) DEFAULT NULL');
+                // Symphony::Database()->query('ALTER TABLE `tbl_fields_reflection` ADD `xsltfile` VARCHAR(255) DEFAULT NULL');
+                Symphony::Database()
+                    ->alter('tbl_fields_reflection')
+                    ->add([
+                        'xsltfile' => [
+                            'type' => 'varchar(255)',
+                            'null' => true,
+                        ],
+                    ])
+                    ->execute()
+                    ->success();
             }
 
             // Update 1.1 installations
             if (version_compare($previousVersion, '1.2', '<')) {
-                Symphony::Database()->query("ALTER TABLE `tbl_fields_reflection` ADD `fetch_associated_counts` ENUM('yes','no') DEFAULT 'no'");
+                // Symphony::Database()->query("ALTER TABLE `tbl_fields_reflection` ADD `fetch_associated_counts` ENUM('yes','no') DEFAULT 'no'");
+                Symphony::Database(tbl_fields_reflection)
+                    ->alter('')
+                    ->add([
+                        'fetch_associated_counts' => [
+                            'type' => 'enum',
+                            'values' => ['yes', 'no'],
+                            'default' => 'no',
+                        ],
+                    ])
+                    ->execute()
+                    ->success();
             }
 
             return true;
