@@ -547,28 +547,6 @@
                     'filter'            => 'not-ends-with:',
                     'help'              => __('Find values that do not end with the given string.')
                 ),
-
-                array(
-                    'title'             => 'handle',
-                    'filter'            => 'handle:',
-                    'help'              => __('Find values by exact match of their handle representation only.')
-                ),
-                array(
-                    'title'             => 'not-handle',
-                    'filter'            => 'not-handle:',
-                    'help'              => __('Find values by exact exclusion of their handle representation only.')
-                ),
-
-                array(
-                    'filter'            => 'sql: NOT NULL',
-                    'title'             => 'is not empty',
-                    'help'              => __('Find entries with a non-empty value.')
-                ),
-                array(
-                    'filter'            => 'sql: NULL',
-                    'title'             => 'is empty',
-                    'help'              => __('Find entries with an empty value.')
-                ),
             );
         }
 
