@@ -4,6 +4,7 @@
         die('<h2>Symphony Error</h2><p>You cannot directly access this file</p>');
     }
     require_once FACE.'/interface.exportablefield.php';
+    require_once EXTENSIONS . '/reflectionfield/lib/class.entryqueryreflectionadapter.php';
 
     class FieldReflection extends Field implements ExportableField
     {
@@ -16,6 +17,7 @@
         public function __construct()
         {
             parent::__construct();
+            $this->entryQueryFieldAdapter = new EntryQueryReflectionAdapter($this);
 
             $this->_name = __('Reflection');
 
@@ -483,6 +485,92 @@
     /*-------------------------------------------------------------------------
         Filtering:
     -------------------------------------------------------------------------*/
+
+        public function fetchFilterableOperators()
+        {
+            return array(
+                array(
+                    'title'             => 'boolean',
+                    'filter'            => 'boolean:',
+                    'help'              => __('Find values that match the given query. Can use operators <code>and</code> and <code>not</code>.')
+                ),
+                array(
+                    'title'             => 'not-boolean',
+                    'filter'            => 'not-boolean:',
+                    'help'              => __('Find values that do not match the given query. Can use operators <code>and</code> and <code>not</code>.')
+                ),
+
+                array(
+                    'title'             => 'regexp',
+                    'filter'            => 'regexp:',
+                    'help'              => __('Find values that match the given <a href="%s">MySQL regular expressions</a>.', array(
+                        'http://dev.mysql.com/doc/mysql/en/Regexp.html'
+                    ))
+                ),
+                array(
+                    'title'             => 'not-regexp',
+                    'filter'            => 'not-regexp:',
+                    'help'              => __('Find values that do not match the given <a href="%s">MySQL regular expressions</a>.', array(
+                        'http://dev.mysql.com/doc/mysql/en/Regexp.html'
+                    ))
+                ),
+
+                array(
+                    'title'             => 'contains',
+                    'filter'            => 'contains:',
+                    'help'              => __('Find values that contain the given string.')
+                ),
+                array(
+                    'title'             => 'not-contains',
+                    'filter'            => 'not-contains:',
+                    'help'              => __('Find values that do not contain the given string.')
+                ),
+
+                array(
+                    'title'             => 'starts-with',
+                    'filter'            => 'starts-with:',
+                    'help'              => __('Find values that start with the given string.')
+                ),
+                array(
+                    'title'             => 'not-starts-with',
+                    'filter'            => 'not-starts-with:',
+                    'help'              => __('Find values that do not start with the given string.')
+                ),
+
+                array(
+                    'title'             => 'ends-with',
+                    'filter'            => 'ends-with:',
+                    'help'              => __('Find values that end with the given string.')
+                ),
+                array(
+                    'title'             => 'not-ends-with',
+                    'filter'            => 'not-ends-with:',
+                    'help'              => __('Find values that do not end with the given string.')
+                ),
+
+                array(
+                    'title'             => 'handle',
+                    'filter'            => 'handle:',
+                    'help'              => __('Find values by exact match of their handle representation only.')
+                ),
+                array(
+                    'title'             => 'not-handle',
+                    'filter'            => 'not-handle:',
+                    'help'              => __('Find values by exact exclusion of their handle representation only.')
+                ),
+
+                array(
+                    'filter'            => 'sql: NOT NULL',
+                    'title'             => 'is not empty',
+                    'help'              => __('Find entries with a non-empty value.')
+                ),
+                array(
+                    'filter'            => 'sql: NULL',
+                    'title'             => 'is empty',
+                    'help'              => __('Find entries with an empty value.')
+                ),
+            );
+        }
 
         public function buildDSRetrievalSQL($data, &$joins, &$where, $andOperation = false)
         {
