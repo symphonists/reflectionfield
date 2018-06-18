@@ -219,7 +219,7 @@
             $data = $entry->getData();
 
             // Section context
-            $section_data = SectionManager::fetch($entry->get('section_id'));
+            $section_data = (new SectionManager)->select()->section($entry->get('section_id'))->execute()->next();
             $section = new XMLElement('section', $section_data->get('name'));
             $section->setAttribute('id', $entry->get('section_id'));
             $section->setAttribute('handle', $section_data->get('handle'));
@@ -251,7 +251,7 @@
                     continue;
                 }
 
-                $field = FieldManager::fetch($field_id);
+                $field = (new FieldManager)->select()->field($field_id)->execute()->next();
                 $field->appendFormattedElement($entry_xml, $values, false, null, $entry->get('id'));
             }
 
