@@ -219,7 +219,11 @@
             $data = $entry->getData();
 
             // Section context
-            $section_data = (new SectionManager)->select()->section($entry->get('section_id'))->execute()->next();
+            $section_data = (new SectionManager)
+                ->select()
+                ->section($entry->get('section_id'))
+                ->execute()
+                ->next();
             $section = new XMLElement('section', $section_data->get('name'));
             $section->setAttribute('id', $entry->get('section_id'));
             $section->setAttribute('handle', $section_data->get('handle'));
@@ -234,7 +238,11 @@
 
                 if (is_array($associated) and !empty($associated)) {
                     foreach ($associated as $section_id => $count) {
-                        $section_data = SectionManager::fetch($section_id);
+                        $section_data = (new SectionManager)
+                            ->select()
+                            ->section($section_id)
+                            ->execute()
+                            ->next();
 
                         if (($section_data instanceof Section) === false) {
                             continue;
@@ -251,7 +259,11 @@
                     continue;
                 }
 
-                $field = (new FieldManager)->select()->field($field_id)->execute()->next();
+                $field = (new FieldManager)
+                    ->select()
+                    ->field($field_id)
+                    ->execute()
+                    ->next();
                 $field->appendFormattedElement($entry_xml, $values, false, null, $entry->get('id'));
             }
 
