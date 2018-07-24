@@ -293,11 +293,13 @@
                 return;
             }
 
-            $element = new XMLElement($this->get('element_name'));
-            $element->setAttribute('handle', $data['handle']);
-            $element->setValue($data['value_formatted']);
-
-            $wrapper->appendChild($element);
+            // Only append element to xml output if value is not empty (#32)
+            if ($data['value_formatted'] != '') {
+                $element = new XMLElement($this->get('element_name'));
+                $element->setAttribute('handle', $data['handle']);
+                $element->setValue($data['value_formatted']);
+                $wrapper->appendChild($element);
+            }
         }
 
         public function prepareTableValue($data, XMLElement $link = null, $entry_id = null)
