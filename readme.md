@@ -10,7 +10,7 @@ When saving an entry Reflection field creates an internal `data` structure simil
 ```xml
 <data>
 	<params>
-		<today>2021-01-11</today>
+		<today>2021-01-12</today>
 		<current-time>20:34</current-time>
 		<this-year>2021</this-year>
 		<this-month>01</this-month>
