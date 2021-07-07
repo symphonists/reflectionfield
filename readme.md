@@ -9,34 +9,34 @@ When saving an entry Reflection field creates an internal `data` structure simil
 
 ```xml
 <data>
-    <params>
-        <today>2016-08-02</today>
-        <current-time>12:34</current-time>
-        <this-year>2016</this-year>
-        <this-month>08</this-month>
-        <this-day>02</this-day>
-        <timezone>+02:00</timezone>
-        <website-name>Example Website</website-name>
-        <root>https://example.com</root>
-        <workspace>https://example.com/workspace</workspace>
-        <http-host>example.com</http-host>
-        <upload-limit>5242880</upload-limit>
-        <symphony-version>2.7.0</symphony-version>
-    </params>
-    <reflection-field-handle>
-        <section id="…" handle="…">…</section>
-        <entry id="…">
-            <field-one>…</field-one>
-            <field-two>
-                <item handle="…">…</item>
-                <item handle="…">…</item>
-            </field-two>
-            <system-date>
-                <created iso="…" timestamp="…" time="…" weekday="…" offset="…">…</created>
-                <modified iso="…" timestamp="…" time="…" weekday="…" offset="…">…</modified>
-            </system-date>
-        </entry>
-    </reflection-field-handle>
+	<params>
+		<today>2021-01-12</today>
+		<current-time>20:34</current-time>
+		<this-year>2021</this-year>
+		<this-month>01</this-month>
+		<this-day>12</this-day>
+		<timezone>+02:00</timezone>
+		<website-name>Example Website</website-name>
+		<root>https://example.com</root>
+		<workspace>https://example.com/workspace</workspace>
+		<http-host>example.com</http-host>
+		<upload-limit>5242880</upload-limit>
+		<symphony-version>2.7.10</symphony-version>
+	</params>
+	<reflection-field-handle>
+		<section id="…" handle="…">…</section>
+		<entry id="…">
+			<field-one>…</field-one>
+			<field-two>
+				<item handle="…">…</item>
+				<item handle="…">…</item>
+			</field-two>
+			<system-date>
+				<created iso="…" timestamp="…" time="…" weekday="…" offset="…">…</created>
+				<modified iso="…" timestamp="…" time="…" weekday="…" offset="…">…</modified>
+			</system-date>
+		</entry>
+	</reflection-field-handle>
 </data>
 ```
 

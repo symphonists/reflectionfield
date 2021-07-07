@@ -144,7 +144,7 @@
                 'this-month' => $date->format('m'),
                 'this-day' => $date->format('d'),
                 'timezone' => $date->format('P'),
-                'website-name' => Symphony::Configuration()->get('sitename', 'general'),
+                'website-name' => General::sanitize(Symphony::Configuration()->get('sitename', 'general')),
                 'root' => URL,
                 'workspace' => URL . '/workspace',
                 'http-host' => HTTP_HOST,
@@ -168,7 +168,7 @@
 
             // Section context
             $section_data = SectionManager::fetch($entry->get('section_id'));
-            $section = new XMLElement('section', $section_data->get('name'));
+            $section = new XMLElement('section', General::sanitize($section_data->get('name')));
             $section->setAttribute('id', $entry->get('section_id'));
             $section->setAttribute('handle', $section_data->get('handle'));
 
